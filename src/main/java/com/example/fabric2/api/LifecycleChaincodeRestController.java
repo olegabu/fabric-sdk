@@ -14,8 +14,8 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class LifecycleChaincodeRestController {
 
-    @Autowired
-    private  Fabric2Service fabric2Service;
+
+    private final Fabric2Service fabric2Service;
 
     @CrossOrigin
     @GetMapping(path = "/channels/{channelId}/chaincodes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
