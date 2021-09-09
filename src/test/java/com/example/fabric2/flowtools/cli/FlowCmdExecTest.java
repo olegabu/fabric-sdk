@@ -12,12 +12,11 @@ import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Profile("integration-tests")
 @SpringBootTest
 @Log4j2
 public class FlowCmdExecTest {
 
-    @Value("${fabric2-api.cli.container}")
+    @Value("${fabric2_api.cli.container}")
     private String cliDockerContainerName;
 
     @Autowired

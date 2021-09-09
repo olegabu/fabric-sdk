@@ -22,6 +22,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.projectlombok:lombok:1.18.16'
     implementation group: 'io.vavr', name: 'vavr', version: '0.10.4'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
@@ -30,6 +32,9 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
+bootRun {
+    classpath = sourceSets.test.runtimeClasspath
+}
 test {
     useJUnitPlatform()
 }

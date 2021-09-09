@@ -5,6 +5,7 @@ import io.vavr.collection.Map;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -14,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
+
+import static java.lang.String.format;
 
 @Component
 @RequiredArgsConstructor
@@ -43,14 +46,21 @@ public class FlowCmdExec<T> {
 
     public static class CmdRunner {
         public Process run(String[] command, Map<String, String> environment) {
-            return Try.of(() -> {
-                ProcessBuilder processBuilder = new ProcessBuilder(command);
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
 
-                java.util.Map<String, String> processEnv = processBuilder.environment();
-                environment.forEach(processEnv::put);
+            java.util.Map<String, String> processEnv = processBuilder.environment();
+            java.util.Map<String, String> updatedEnv = new java.util.HashMap<>();
+            environment.forEach((key, value) -> {
+                processEnv.put(key, value);
+                updatedEnv.put(key, value);
+                log.info("Env: {}={}", key, value);
+            });
 
-                return processBuilder.start();
-            }).getOrElseThrow(e -> new RuntimeException(String.format("Error at exec command ", (Object[]) command), e));
+            return Try.of(() -> processBuilder.start())
+                    .getOrElseThrow(e -> {
+                        String errorMessage = format("Error at exec command '%s'\nNew env: %s, \nEnv:%s", StringUtils.join(command), StringUtils.join(updatedEnv), StringUtils.join(processEnv));
+                        return new RuntimeException(errorMessage, e);
+                    });
         }
     }
 
