@@ -1,15 +1,15 @@
 package com.example.fabric2.flowtools.cli;
 
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -20,17 +20,16 @@ import java.util.function.Function;
 @Log4j2
 public class FlowCmdExec<T> {
 
-/*    public static Function<InputStream, Flux<String>> ConsoleLinesParser = (inputStream) -> {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        return Flux.fromStream(bufferedReader.lines());
-    };*/
-
     private final BlockingQueue<Process> queue = new LinkedBlockingQueue<>();
 
     public Flux<T> exec(String[] command, Function<InputStream, Flux<T>> recordParser) {
+        return exec(command, recordParser, HashMap.empty());
+    }
+
+    public Flux<T> exec(String[] command, Function<InputStream, Flux<T>> recordParser, Map<String, String> environment) {
 
         log.info("Running command {}", (Object) command);
-        Process run = new CmdRunner().run(command);
+        Process run = new CmdRunner().run(command, environment);
         run.onExit().thenApply(process -> queue.offer(process));
 
         log.info("Parsing output");
@@ -43,12 +42,15 @@ public class FlowCmdExec<T> {
 
 
     public static class CmdRunner {
-        public Process run(String[] command) {
-            try {
-                return new ProcessBuilder(command).start();
-            } catch (IOException e) {
-                throw new RuntimeException(String.format("Error at exec command ", (Object[]) command), e);
-            }
+        public Process run(String[] command, Map<String, String> environment) {
+            return Try.of(() -> {
+                ProcessBuilder processBuilder = new ProcessBuilder(command);
+
+                java.util.Map<String, String> processEnv = processBuilder.environment();
+                environment.forEach(processEnv::put);
+
+                return processBuilder.start();
+            }).getOrElseThrow(e -> new RuntimeException(String.format("Error at exec command ", (Object[]) command), e));
         }
     }
 
