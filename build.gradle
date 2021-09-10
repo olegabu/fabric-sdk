@@ -16,6 +16,13 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+//        content {
+//            snapshotsOnly()
+//            includeGroup "org.hyperledger.fabric-sdk-java"
+//        }
+    }
 }
 
 dependencies {
@@ -23,6 +30,8 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.16'
     implementation group: 'io.vavr', name: 'vavr', version: '0.10.4'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+
+    implementation group: 'org.hyperledger.fabric-sdk-java', name: 'fabric-sdk-java', version: '[2.2.0,2.3.0)'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
