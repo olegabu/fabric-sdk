@@ -7,13 +7,7 @@ import reactor.core.publisher.Flux;
 
 @Service
 @Log4j2
-public class ExternalChaincodeService {
-
-    public enum DeploymentTargetPlatform {
-        NATIVE,
-        DOCKER,
-        KUBERNETES
-    }
+public class ExternalChaincodeServerService {
 
     @Data
     public static class Result{
@@ -21,7 +15,7 @@ public class ExternalChaincodeService {
     }
 
 
-    public Flux<Result> runChaincodeOnThisHost(DeploymentTargetPlatform targetPlatform, ChaincodeServerParams params) {
+    public Flux<Result> runChaincodeOnThisHost(ChaincodeTargetPlatform targetPlatform, ChaincodeServerParams params) {
         return null;
     }
 
