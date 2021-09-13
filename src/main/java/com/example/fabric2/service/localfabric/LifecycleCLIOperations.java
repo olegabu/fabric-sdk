@@ -1,15 +1,19 @@
-package com.example.fabric2.service.fabriclowlevel;
+package com.example.fabric2.service.localfabric;
 
 import com.example.fabric2.flowtools.cli.ConsoleOutputParsers;
 import com.example.fabric2.flowtools.cli.FlowCmdExec;
 import com.example.fabric2.model.Chaincode;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.stream.Stream;
 
 @Component
@@ -33,14 +37,14 @@ public class LifecycleCLIOperations {
     @Value("${fabric.peer.command:peer}")
     private String peerCommand;
 
-    private final FlowCmdExec<Chaincode> flowCmdExec;
+    private final FlowCmdExec<Chaincode> chaincodeCmdExec;
+    private final FlowCmdExec<String> plainCmdExec;
 
     public Flux<Chaincode> getCommittedChaincodes(String channelId) {
         String[] command = joinCommand(peerCommand, "lifecycle chaincode querycommitted --channelID ", channelId,
                 "--tls", "--cafile ",
                 String.format("/etc/hyperledger/crypto-config/ordererOrganizations/%s/msp/tlscacerts/tlsca.%s-cert.pem", ORDERER_DOMAIN, ORDERER_DOMAIN));
-        Map<String, String> env = prepareEnvironment();
-        return flowCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToChaincodeParser, env);
+        return chaincodeCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToChaincodeParser, prepareEnvironment());
     }
 
     private Map<String, String> prepareEnvironment() {
@@ -58,4 +62,10 @@ public class LifecycleCLIOperations {
                 .flatMap(Stream::of)
                 .toArray(String[]::new);
     }
+
+    public Flux<String> installChaincodeFromPackage(Path pkgTempPath) {
+        String[] command = joinCommand(peerCommand, "lifecycle chaincode install ", pkgTempPath.toAbsolutePath().toString());
+        return plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment());
+    }
+
 }

@@ -2,7 +2,11 @@ package com.example.fabric2.service.externalchaincode;
 
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
+import com.example.fabric2.dto.SdkAgentConnection;
+import com.example.fabric2.service.management.PortAssigner;
+import com.example.fabric2.service.tar.Tar;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +15,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -20,6 +25,9 @@ import java.nio.file.Path;
 public class ExternalChaincodeClientService {
 
     private final ObjectMapper objectMapper;
+    private final ExternalChaincodeHostService chaincodeServerService;
+    private final PortAssigner portAssigner;
+    private final Tar tar;
 
     @Data
     public static class Result {
@@ -27,8 +35,31 @@ public class ExternalChaincodeClientService {
     }
 
 
-    public Flux<Result> installExternalChaincode() {
-        return null;
+    public Flux<String> installExternalChaincode(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection) {
+
+
+        return Flux.from(portAssigner.assignRemotePort(sdkAgentConnection)
+                .map(chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection)))
+                .map(connection -> preparePackageFromMetadatandConnectionInStream(metadata, connection))
+                .flatMap(packageInputStream -> chaincodeServerService.installChaincodeFromPackage(packageInputStream));
+
+//        Mono<String> stringMono = webClient.post().uri(sdkAgentConnection.getAddress())
+//                .contentType(MediaType.MULTIPART_FORM_DATA)
+//                .body(BodyInserters.fromMultipartData(buildMultipartBody(filePartFlux, metadata)))
+//                .retrieve()
+//                .bodyToMono(String.class);
+//        return stringMono;
+    }
+
+    private InputStream preparePackageFromMetadatandConnectionInStream(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connection) {
+        metadata.setConnection(connection);
+        return Try.of(() -> tar.createTar(HashMap.of("metadata.json", objectMapper.writeValueAsString(metadata).getBytes())))
+                .getOrElseThrow(e -> new RuntimeException("Error serializing json:" + metadata.toString(), e));
+    }
+
+    private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
+        String chaincodeAddress = sdkAgentConnection.getAddress() + ":" + chaincodePort;
+        return ExternalChaincodeConnection.of(chaincodeAddress, "TODO");
     }
 
     public Flux<Path> packageExternalChaincode(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connection,
