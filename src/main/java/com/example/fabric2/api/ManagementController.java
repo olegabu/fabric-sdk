@@ -2,6 +2,7 @@ package com.example.fabric2.api;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
@@ -13,6 +14,11 @@ public class ManagementController {
 
     @GetMapping(path = "/assignport")
     public Flux<Integer> reserveNextFreePort() {
+        return Flux.just(firstPortInPool); //TODO: dynamic, store
+    }
+
+    @PostMapping(path = "/runchaincode")
+    public Flux<Integer> runChaincodeOnHost() {
         return Flux.just(firstPortInPool); //TODO: dynamic, store
     }
 

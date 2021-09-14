@@ -23,7 +23,7 @@ public class PortAssigner {
     }
 
     public Flux<Integer> assignLocalPort() {
-        return Flux.just(firstPortInPool);
+        return Flux.just(firstPortInPool); //TODO: get,reserve port from pool
     }
 
     public Mono<Integer> assignRemotePort(SdkAgentConnection sdkAgentConnection) {

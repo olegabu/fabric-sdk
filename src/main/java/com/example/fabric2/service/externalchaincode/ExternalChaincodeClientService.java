@@ -10,24 +10,30 @@ import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 @Log4j2
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ExternalChaincodeClientService {
 
     private final ObjectMapper objectMapper;
-    private final ExternalChaincodeHostService chaincodeServerService;
+    private final ExternalChaincodeLocalHostService chaincodeLocalService;
     private final PortAssigner portAssigner;
     private final Tar tar;
+
+    private final WebClient webClient= WebClient.builder().build();
 
     @Data
     public static class Result {
@@ -35,13 +41,24 @@ public class ExternalChaincodeClientService {
     }
 
 
-    public Flux<String> installExternalChaincode(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection) {
+    public Mono<String> requestRunExternalChaincode (SdkAgentConnection sdkAgentConnection, Mono<FilePart> filePartFlux) {
+        return filePartFlux.flatMap(filePart->
+                webClient.post().uri(sdkAgentConnection.getAddress()+"/control/runchaincode")
+                .body(BodyInserters.fromPublisher(filePart.content(), DataBuffer.class))
+                .exchangeToMono(resp->{
+                    return resp.bodyToMono(String.class);
+                })
+        );
+    }
 
+    public Mono<String> requestRunExternalChaincode (SdkAgentConnection sdkAgentConnection, InputStream inputStream) {
+        MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();
+        multipartBodyBuilder.part("file", inputStream);
 
-        return Flux.from(portAssigner.assignRemotePort(sdkAgentConnection)
-                .map(chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection)))
-                .map(connection -> preparePackageFromMetadatandConnectionInStream(metadata, connection))
-                .flatMap(packageInputStream -> chaincodeServerService.installChaincodeFromPackage(packageInputStream));
+        return webClient.post().uri(sdkAgentConnection.getAddress())
+                .body(BodyInserters.fromMultipartData(multipartBodyBuilder.build()))
+                .exchangeToMono(resp->resp.bodyToMono(String.class));
+
 
 //        Mono<String> stringMono = webClient.post().uri(sdkAgentConnection.getAddress())
 //                .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -51,68 +68,31 @@ public class ExternalChaincodeClientService {
 //        return stringMono;
     }
 
-    private InputStream preparePackageFromMetadatandConnectionInStream(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connection) {
+    public Flux<String> installExternalChaincode(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection) {
+
+        return Flux.from(portAssigner.assignRemotePort(sdkAgentConnection)
+                .map(chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection)))
+                .map(connection -> prepareTarFromMetadataAndConnectionInStream(metadata, connection))
+                .flatMap(tarInputStream -> chaincodeLocalService.installChaincodeFromPackage(tarInputStream));
+    }
+
+    private InputStream prepareTarFromMetadataAndConnectionInStream(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connection) {
         metadata.setConnection(connection);
-        return Try.of(() -> tar.createTar(HashMap.of("metadata.json", objectMapper.writeValueAsString(metadata).getBytes())))
+        return Try.of(() ->
+        {
+            InputStream codeTarGz = this.tar.createTar("connection.json", objectMapper.writeValueAsString(connection).getBytes());
+            return tar.createTar(HashMap.of(
+                    "metadata.json", objectMapper.writeValueAsString(metadata).getBytes(),
+                    "code.tar.gz", codeTarGz.readAllBytes()));
+        })
                 .getOrElseThrow(e -> new RuntimeException("Error serializing json:" + metadata.toString(), e));
     }
 
     private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
-        String chaincodeAddress = sdkAgentConnection.getAddress() + ":" + chaincodePort;
+        String chaincodeAddress = sdkAgentConnection.getHost() + ":" + chaincodePort;
         return ExternalChaincodeConnection.of(chaincodeAddress, "TODO");
     }
 
-    public Flux<Path> packageExternalChaincode(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connection,
-                                               Flux<DataBuffer> fileDataBuffer) {
-
-        metadata.setConnection(connection);
-
-        return Try.of(() -> Files.createTempDirectory("packageTest"))
-                .map(tmpPath -> preparePackage(tmpPath, metadata, fileDataBuffer))
-                .getOrElseThrow(e -> new RuntimeException("Error at packaging chaincode", e));
-
-//        ;
-//        Files.write(testDir.resolve("test.txt"), objectMapper.writeValueAsString(metadata).getBytes());
-
-    }
-
-    private Flux<Path> preparePackage(Path tmpPath, ExternalChaincodeMetadata metadata, Flux<DataBuffer> fileDataBuffer) {
-//        DataBufferUtils.write(Files.newOutputStream(tmpPath.resolve("code.tar.gz")));
-//        writeMetadataToFile(tmpPath, metadata);
-
-/*        String packageName=metadata.getLabel()+"tar.gz";
-
-        OutputStream outputStream = Files.newOutputStream(tmpPath.resolve(packageName));
-
-        TarArchiveOutputStream archiveOutputStream = new TarArchiveOutputStream(new GzipCompressorOutputStream(outputStream));
-
-        archiveOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
-
-        String name = "metadata.json";
-
-        TarArchiveEntry archiveEntry = new TarArchiveEntry(name);
-        archiveEntry.setMode(0100644);
-        archiveEntry.setSize(mataDataBytes.length);
-        archiveOutputStream.putArchiveEntry(archiveEntry);
-        archiveOutputStream.write(mataDataBytes);
-        archiveOutputStream.closeArchiveEntry();
-
-        archiveEntry = new TarArchiveEntry("code.tar.gz");
-        archiveEntry.setMode(0100644);
-        archiveEntry.setSize(dataBytes.length);
-        archiveOutputStream.putArchiveEntry(archiveEntry);
-        archiveOutputStream.write(dataBytes);
-        archiveOutputStream.closeArchiveEntry();
-        archiveOutputStream.close();
-
-        return fromBytes(bos.toByteArray());*/
-        return Flux.just();
-    }
-
-    private Path writeMetadataToFile(Path tmpPath, ExternalChaincodeMetadata metadata) {
-        return Try.of(() -> Files.write(tmpPath.resolve("metadata.json"), objectMapper.writeValueAsString(metadata).getBytes()))
-                .getOrElseThrow((e) -> new RuntimeException("Cannot write metadata.json"));
-    }
 
 
 }

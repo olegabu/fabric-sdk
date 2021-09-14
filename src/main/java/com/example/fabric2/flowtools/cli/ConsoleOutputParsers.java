@@ -12,11 +12,11 @@ public class ConsoleOutputParsers {
 
     public static final Function<InputStream, Flux<String>> ConsoleLinesToStringParser = (inputStream) -> {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        return Flux.fromStream(bufferedReader.lines());
+        return Flux.fromStream(bufferedReader.lines()).log();
     };
 
     public static final Function<InputStream, Flux<Chaincode>> ConsoleLinesToChaincodeParser = (inputStream) -> {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        return Flux.fromStream(bufferedReader.lines()).skip(1).map(Chaincode::fromLine);
+        return Flux.fromStream(bufferedReader.lines()).log().skip(1).map(Chaincode::fromLine);
     };
 }

@@ -4,5 +4,10 @@ import lombok.Data;
 
 @Data(staticConstructor = "of")
 public class SdkAgentConnection {
-    private final String address;
+    private final String host;
+    private final Integer port;
+
+    public String getAddress() {
+        return host + ":" + port;
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.fabric2.service.tar;
 
+import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -15,6 +16,10 @@ import java.io.InputStream;
 @Component
 @Log4j2
 public class Tar {
+
+    public InputStream createTar(String entryName , byte[] bytes) {
+        return createTar(HashMap.of(entryName, bytes));
+    }
 
     public InputStream createTar(Map<String, byte[]> entries) {
 
@@ -35,6 +40,7 @@ public class Tar {
                     log.error("Error creating tar entry " + fileName, e);
                 }
             });
+            archiveOutputStream.close();
 
             return new ByteArrayInputStream(bos.toByteArray()); //TODO: use piped streams
 

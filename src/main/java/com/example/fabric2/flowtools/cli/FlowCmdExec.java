@@ -36,11 +36,12 @@ public class FlowCmdExec<T> {
         run.onExit().thenApply(process -> queue.offer(process));
 
         log.info("Parsing output");
-        Flux<T> successOutput = recordParser.apply(run.getInputStream()).log();
+        Flux<T> successOutput = recordParser.apply(run.getInputStream());
+        Flux<T> errOutputOnSuccess = recordParser.apply(run.getErrorStream());
         log.info("Wait for exit code");
         Flux<T> errorOutput = waitForExitCodeAndGetErrorOutput(queue);
 
-        return Flux.merge(successOutput, errorOutput);
+        return Flux.merge(successOutput, errOutputOnSuccess, errorOutput);
     }
 
 

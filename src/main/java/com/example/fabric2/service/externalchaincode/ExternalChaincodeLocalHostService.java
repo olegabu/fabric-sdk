@@ -17,7 +17,7 @@ import java.nio.file.Path;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class ExternalChaincodeHostService {
+public class ExternalChaincodeLocalHostService {
 
     private final LifecycleCLIOperations cliOperations;
     private final CommonUtils utils;
