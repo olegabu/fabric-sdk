@@ -3,13 +3,10 @@ package com.example.fabric2.service.localfabric.externalchaincode;
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.dto.SdkAgentConnection;
-import com.example.fabric2.service.externalchaincode.ChaincodeTargetPlatform;
-import com.example.fabric2.service.externalchaincode.ExternalChaincodeClientService;
+import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
 import com.example.fabric2.service.management.PortAssigner;
 import com.example.fabric2.util.CommonUtils;
-import com.example.fabric2.util.TmpFiles;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import okhttp3.mockwebserver.MockWebServer;
+import com.example.fabric2.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -18,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -36,21 +31,21 @@ public class ExternalChaincodeClientServiceTest {
     @MockBean
     PortAssigner portAssigner;
     @MockBean
-    TmpFiles tmpFiles;
+    FileUtils tmpFiles;
     @MockBean(answer = Answers.CALLS_REAL_METHODS)
     CommonUtils utils;
     @Autowired
-    private ExternalChaincodeClientService clientService;
+    private ExternalChaincodeLocalHostService hostService;
 
     public static final SdkAgentConnection SDK_CONNECTION = SdkAgentConnection.of("localhost", 8080);
 
     @Test
     public void packageExternalChaincodeTest() {
 
-        ExternalChaincodeMetadata metadata = ExternalChaincodeMetadata.of("testlabel", "external",
-                ChaincodeTargetPlatform.JAVA);
+        ExternalChaincodeMetadata metadata = ExternalChaincodeMetadata.of("testlabel", "external", "1.0");
+        ExternalChaincodeConnection connectionJson = ExternalChaincodeConnection.of("localhost", 99991, "TODO");
 
-        Mockito.when(portAssigner.assignRemotePort(SDK_CONNECTION)).thenReturn(Mono.just(9990));
+//        Mockito.when(portAssigner.assignRemotePort(SDK_CONNECTION)).thenReturn(Mono.just(9990));
         Mockito.when(tmpFiles.generateTmpFileName(Mockito.any(), Mockito.any())).thenReturn(Path.of("./tmp/test.tar.gz"));
         Mockito.when(utils.saveStreamToFile(Mockito.any(), Mockito.any()))
                 .thenAnswer(invocation -> {
@@ -59,10 +54,10 @@ public class ExternalChaincodeClientServiceTest {
                     return Path.of("/opt/chaincode/test.tar.gz");
                 });
 
-        Flux<String> result = clientService.installExternalChaincode(metadata, SDK_CONNECTION);
+        Mono<String> result = hostService.installExternalChaincodePeerPart(metadata, connectionJson);
 
         StepVerifier.create(result)
-                .expectNextCount(2)
+                .expectNextCount(1)
                 .verifyComplete();
 
     }

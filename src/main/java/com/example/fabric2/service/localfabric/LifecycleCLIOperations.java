@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -63,9 +64,10 @@ public class LifecycleCLIOperations {
                 .toArray(String[]::new);
     }
 
-    public Flux<String> installChaincodeFromPackage(Path pkgTempPath) {
+    public Mono<String> installChaincodeFromPackage(Path pkgTempPath) {
         String[] command = joinCommand(peerCommand, "lifecycle chaincode install ", pkgTempPath.toAbsolutePath().toString());
-        return plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment());
+        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment()));
+
     }
 
 }

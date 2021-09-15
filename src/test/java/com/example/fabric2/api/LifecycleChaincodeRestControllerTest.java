@@ -32,7 +32,9 @@ public class LifecycleChaincodeRestControllerTest {
     @Test
     void testController() {
 
-        when(fabric2Service.getCommittedChaincodes("common")).thenReturn(Flux.just(new Chaincode("dns", "1.0")));
+        when(fabric2Service.getCommittedChaincodes("common")).thenReturn(Flux.just(
+                new Chaincode("dns", "1.0"),
+                new Chaincode("test", "2.0")));
 
         Flux<Chaincode> responseBody = webTestClient.get()
                 .uri("/channels/common/chaincodes")
@@ -45,6 +47,7 @@ public class LifecycleChaincodeRestControllerTest {
 
         StepVerifier.create(responseBody)
                 .expectNext(new Chaincode("dns", "1.0"))
+                .expectNext(new Chaincode("test", "2.0"))
                 .verifyComplete();
 
     }

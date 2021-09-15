@@ -1,19 +1,16 @@
 package com.example.fabric2.dto;
 
-import com.example.fabric2.service.externalchaincode.ChaincodeTargetPlatform;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
-@Data
-@AllArgsConstructor(staticName = "of")
-@RequiredArgsConstructor(staticName = "of")
+@Data(staticConstructor = "of")
 public class ExternalChaincodeMetadata {
 
     private final String label;
     private final String type;
-    private final ChaincodeTargetPlatform targetPlatform;
-    private String version = "1.0";
+    private final String version;
 
-    private ExternalChaincodeConnection connection;
+    public String label() {
+        return StringUtils.isBlank(version) ? label : label + "_" + version;
+    }
 }

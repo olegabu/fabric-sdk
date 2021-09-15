@@ -2,18 +2,20 @@ package com.example.fabric2.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class Chaincode {
 
     public static final Chaincode empty = new Chaincode(null, null);
 
-    private final String name;
-    private final String version;
+    private String name;
+    private String version;
 
     /**
      * Parsing from CLI output for specified chaincode name

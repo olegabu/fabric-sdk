@@ -1,6 +1,7 @@
 package com.example.fabric2.flowtools.cli;
 
 import com.example.fabric2.model.Chaincode;
+import io.vavr.collection.HashMap;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class FlowCmdExecTest {
         Flux<Chaincode> exec = chaincodeFlowCmdExec.exec(
                 new String[]{"docker", "exec", cliDockerContainerName, "peer", "lifecycle", "chaincode",
                         "querycommitted", "--channelID", "common"},
-                ConsoleOutputParsers.ConsoleLinesToChaincodeParser);
+                ConsoleOutputParsers.ConsoleLinesToChaincodeParser, HashMap.empty());
 
         StepVerifier.create(exec)
                 .expectNext(new Chaincode("dns", "1.0"))
@@ -41,7 +42,7 @@ public class FlowCmdExecTest {
 
         Flux<String> exec = stringFlowCmdExec.exec(
                 new String[]{"docker", "exec", cliDockerContainerName, "peer", "version"},
-                ConsoleOutputParsers.ConsoleLinesToStringParser);
+                ConsoleOutputParsers.ConsoleLinesToStringParser, HashMap.empty());
 
         StepVerifier.create(exec).
                 expectNext("peer:").

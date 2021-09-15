@@ -8,11 +8,15 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor(staticName = "of")
 @RequiredArgsConstructor(staticName = "of")
 public class ExternalChaincodeConnection {
-    private final String address;
+    private final String chaincodeHost;
+    private final Integer chaincodePort;
     private final String root_cert;
-    private String dial_timout="10s";
-    private String client_auth_required="true";
+    private String dial_timout = "10s";
+    private String client_auth_required = "true";
     private String client_key;
     private String client_cert;
 
+    public String getAddress() {
+        return chaincodeHost + "/" + chaincodePort;
+    }
 }
