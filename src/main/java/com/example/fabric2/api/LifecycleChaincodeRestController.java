@@ -4,14 +4,11 @@ import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.Fabric2Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 
-@RestController
+@RestController(value = "/lifecycle")
 @RequiredArgsConstructor
 public class LifecycleChaincodeRestController {
 
@@ -19,10 +16,17 @@ public class LifecycleChaincodeRestController {
     private final Fabric2Service fabric2Service;
 
     @CrossOrigin
-    @GetMapping(path = "/channels/{channelId}/chaincodes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(path = "/channel/{channelId}/chaincodes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Chaincode> getCommittedChaincodes(@PathVariable String channelId) {
         return fabric2Service.getCommittedChaincodes(channelId);
     }
+
+    @CrossOrigin
+    @PostMapping(path = "/chaincode/approve/{channelId}/{chaincodeName}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Chaincode> approveChaincode(@PathVariable String channelId) {
+        return null;//TODO
+    }
+
 
     @CrossOrigin
     @GetMapping(path = "/ping", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

@@ -8,6 +8,8 @@ import com.example.fabric2.service.externalchaincode.ExternalChaincodeClientServ
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
 import com.example.fabric2.service.management.PortAssigner;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
@@ -37,12 +39,18 @@ public class Fabric2Service {
     public Mono<String> deployExternalChaincode(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection,
                                                 Mono<FilePart> filePartFlux) {
 
+        return installExternalChaincodePeerPart(metadata, sdkAgentConnection).flatMap(
+                (tuple2) -> chaincodeClientService.requestRunExternalChaincode(sdkAgentConnection, metadata.getLabel(), tuple2._1.getChaincodePort(), filePartFlux));
+    }
+
+    public Mono<Tuple2<ExternalChaincodeConnection, String>> installExternalChaincodePeerPart(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection) {
+
         return portAssigner.assignRemotePort(sdkAgentConnection).map(
                 chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection)).flatMap(
-                connectionJson -> {
-                    chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson);
-                    return chaincodeClientService.requestRunExternalChaincode(sdkAgentConnection, metadata.getLabel(), connectionJson.getChaincodePort(), filePartFlux);
-                });
+                connectionJson ->
+                        chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson)
+                                .map(result -> Tuple.of(connectionJson, result)));
+
     }
 
     private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
