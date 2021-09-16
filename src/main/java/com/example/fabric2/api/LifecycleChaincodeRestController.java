@@ -23,7 +23,7 @@ public class LifecycleChaincodeRestController {
 
     @CrossOrigin
     @PostMapping(path = "/chaincode/approve/{channelId}/{chaincodeName}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<Chaincode> approveChaincode(@PathVariable String channelId) {
+    public Flux<Chaincode> approveChaincode(@PathVariable String channelId, @PathVariable String chaincodeName) {
         return null;//TODO
     }
 

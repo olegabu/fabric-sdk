@@ -47,10 +47,14 @@ public class Fabric2Service {
 
         return portAssigner.assignRemotePort(sdkAgentConnection).map(
                 chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection)).flatMap(
-                connectionJson ->
-                        chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson)
-                                .map(result -> Tuple.of(connectionJson, result)));
+                connectionJson -> chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson)
+                        .map(result -> Tuple.of(connectionJson, result)));
 
+    }
+
+
+    public Mono<String> approveChaincode(String channelId, String chaincodeName) {
+        return null;//TODO
     }
 
     private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
