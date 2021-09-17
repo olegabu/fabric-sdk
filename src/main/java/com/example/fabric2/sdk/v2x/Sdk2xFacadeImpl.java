@@ -6,7 +6,10 @@ import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.control.Try;
 import org.hyperledger.fabric.sdk.HFClient;
+import org.hyperledger.fabric.sdk.NetworkConfig;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
+import org.springframework.context.annotation.Profile;
+
 
 public class Sdk2xFacadeImpl implements SdkFacade {
     @Override
@@ -18,8 +21,6 @@ public class Sdk2xFacadeImpl implements SdkFacade {
     @Override
     public String installChaincode() {
 
-        HFClient orgClient = HFClient.createNewInstance();
-        Try.of(()->{orgClient.setCryptoSuite(CryptoSuite.Factory.getCryptoSuite());return true;}).get();
         return "";
         //TODO
     }
