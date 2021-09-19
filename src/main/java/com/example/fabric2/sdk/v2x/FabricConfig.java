@@ -1,18 +1,12 @@
 package com.example.fabric2.sdk.v2x;
 
 import io.vavr.control.Try;
-import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric.sdk.HFClient;
-import org.hyperledger.fabric.sdk.NetworkConfig;
-import org.hyperledger.fabric.sdk.User;
-import org.hyperledger.fabric.sdk.identity.X509Enrollment;
 import org.hyperledger.fabric.sdk.security.CryptoSuite;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.security.PrivateKey;
-import java.security.spec.X509EncodedKeySpec;
 
 @Component
 public class FabricConfig {
@@ -20,7 +14,7 @@ public class FabricConfig {
     @Value("${org}")
     private String org;
 
-    @Value("${ENROLL_SECRET}:adminpw")
+    @Value("${ENROLL_SECRET:adminpw}")
     private String enrollSecret;
 
 //    private final PrivateKey pk = X509EncodedKeySpec

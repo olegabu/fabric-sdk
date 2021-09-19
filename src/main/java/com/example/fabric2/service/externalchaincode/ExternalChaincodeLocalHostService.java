@@ -25,6 +25,7 @@ public class ExternalChaincodeLocalHostService {
 
     private final LifecycleCLIOperations cliOperations;
     private final CommonUtils utils;
+    private final FileUtils fileUtils;
     private final Tar tar;
     private final ObjectMapper objectMapper;
 
@@ -65,7 +66,7 @@ public class ExternalChaincodeLocalHostService {
 
 
     private Path savePackageToFile(InputStream packageInStream) {
-        Path pkgFilePath = FileUtils.generateTmpFileName("chaincode-from-package", "tar.gz");
+        Path pkgFilePath = fileUtils.generateTmpFileName("chaincode-from-package", "tar.gz");
         pkgFilePath = utils.saveStreamToFile(packageInStream, pkgFilePath);
         return pkgFilePath;
     }

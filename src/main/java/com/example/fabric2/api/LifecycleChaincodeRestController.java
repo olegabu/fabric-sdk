@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 
-@RestController(value = "/lifecycle")
+@RestController()
+@RequestMapping(value = "/lifecycle")
 @RequiredArgsConstructor
 public class LifecycleChaincodeRestController {
 

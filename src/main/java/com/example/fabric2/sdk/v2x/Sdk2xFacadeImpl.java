@@ -4,13 +4,9 @@ import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.sdk.SdkFacade;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
-import io.vavr.control.Try;
-import org.hyperledger.fabric.sdk.HFClient;
-import org.hyperledger.fabric.sdk.NetworkConfig;
-import org.hyperledger.fabric.sdk.security.CryptoSuite;
-import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
 
-
+@Component
 public class Sdk2xFacadeImpl implements SdkFacade {
     @Override
     public List<Map<String, Chaincode>> getInstalledChaincodes() {

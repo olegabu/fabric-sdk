@@ -4,9 +4,7 @@ import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.Fabric2Service;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -37,7 +35,7 @@ public class LifecycleChaincodeRestControllerTest {
                 new Chaincode("test", "2.0")));
 
         Flux<Chaincode> responseBody = webTestClient.get()
-                .uri("/channels/common/chaincodes")
+                .uri("/lifecycle/channel/common/chaincodes")
                 .accept(MediaType.TEXT_EVENT_STREAM)
 
                 .exchange()

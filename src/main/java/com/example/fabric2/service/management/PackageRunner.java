@@ -23,8 +23,10 @@ public class PackageRunner {
     @Value("${remote.vm.apps.dir:/apps}")
     private String appsDir;
 
+
     private final FlowCmdExec<String> cmdExec;
     private final Tar tar;
+    private final FileUtils fileUtils;
 
     private static InputStream initialEmptyStream = new ByteArrayInputStream(new byte[]{});
 
@@ -35,7 +37,7 @@ public class PackageRunner {
                 .map(inputStream ->
                         tar.extractTarGz(Path.of(appsDir, name), inputStream))
                 .flatMap(resultDirPath -> {
-                            FileUtils.setExecutionPermissions(resultDirPath.resolve("run.sh"));
+                    fileUtils.setExecutionPermissions(resultDirPath.resolve("run.sh"));
                             return cmdExec.exec(resultDirPath.toFile(), new String[]{"/bin/sh", "run.sh"},
                                     ConsoleOutputParsers.ConsoleOutputToStringParser,
                                     HashMap.of("PORT", String.valueOf(port)))

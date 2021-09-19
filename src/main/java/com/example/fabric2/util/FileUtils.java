@@ -10,10 +10,10 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-
+@Component
 public class FileUtils {
 
-    public static Path generateTmpFileName(String prefix, String suffix) {
+    public Path generateTmpFileName(String prefix, String suffix) {
         Consumer<Path> deleteTmpFile = path -> Try.of(()->Files.deleteIfExists(path)).map((b)->path);
 
         return Try.of(()->Files.createTempFile(prefix, suffix))
@@ -21,7 +21,7 @@ public class FileUtils {
                 .get();
     }
 
-    public static void setExecutionPermissions(Path filePath) {
+    public void setExecutionPermissions(Path filePath) {
         Set<PosixFilePermission> executePermissions =
                 EnumSet.of(PosixFilePermission.OWNER_EXECUTE,
                         PosixFilePermission.GROUP_EXECUTE,
