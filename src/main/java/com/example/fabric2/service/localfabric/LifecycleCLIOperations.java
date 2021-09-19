@@ -5,15 +5,12 @@ import com.example.fabric2.flowtools.cli.FlowCmdExec;
 import com.example.fabric2.model.Chaincode;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
-import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
@@ -33,8 +30,6 @@ public class LifecycleCLIOperations {
     private String CORE_PEER_ADDRESS;
     @Value("${core_peer_tls_enabled}")
     private String CORE_PEER_TLS_ENABLED;
-    @Value("${crypto_config_dir}")
-    private String cryptoConfigDir;
     @Value("${fabric.peer.command:peer}")
     private String peerCommand;
 

@@ -33,6 +33,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.21'
 
     implementation group: 'org.hyperledger.fabric-sdk-java', name: 'fabric-sdk-java', version: '[2.2.0,2.3.0)'
+    implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.69'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

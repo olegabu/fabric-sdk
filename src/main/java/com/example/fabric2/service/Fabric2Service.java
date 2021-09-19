@@ -7,6 +7,7 @@ import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeClientService;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
+import com.example.fabric2.service.localfabric.SdkOperations;
 import com.example.fabric2.service.management.PortAssigner;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -27,6 +28,7 @@ public class Fabric2Service {
 
 
     private final LifecycleCLIOperations cliOperations;
+    private final SdkOperations sdkOperations;
     private final ExternalChaincodeClientService chaincodeClientService;
     private final ExternalChaincodeLocalHostService chaincodeHostService;
     private final PortAssigner portAssigner;
