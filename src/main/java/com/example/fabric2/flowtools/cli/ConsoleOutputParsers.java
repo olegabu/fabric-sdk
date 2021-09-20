@@ -16,10 +16,22 @@ public class ConsoleOutputParsers {
         return Flux.fromStream(bufferedReader.lines()).log();
     };
 
-    public static final Function<InputStream, Publisher<Chaincode>> ConsoleLinesToChaincodeParser = (inputStream) -> {
+    public static final Function<InputStream, Publisher<Chaincode>> ConsoleInstalledListToChaincodesParser = (inputStream) -> {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        return Flux.fromStream(bufferedReader.lines()).log().skip(1).map(Chaincode::fromLine); //TODO: move skip(1) to caller
+        return Flux.fromStream(bufferedReader.lines()).log().skip(1).map(Chaincode::fromInstalledLine); //TODO: move skip(1) to caller
     };
+
+    public static final Function<InputStream, Publisher<Chaincode>> ConsoleApprovedListToChaincodesParser = (inputStream) -> {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        return Flux.fromStream(bufferedReader.lines()).log().skip(1).map(Chaincode::fromApprovedLine); //TODO: move skip(1) to caller
+    };
+
+    public static final Function<InputStream, Publisher<Chaincode>> ConsoleCommitedListToChaincodesParser = (inputStream) -> {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        return Flux.fromStream(bufferedReader.lines()).log().skip(1).map(Chaincode::fromCommittedLine); //TODO: move skip(1) to caller
+    };
+
+
 
     public static final Function<InputStream, Publisher<String>> ConsoleOutputToStringParser = (inputStream) -> {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));

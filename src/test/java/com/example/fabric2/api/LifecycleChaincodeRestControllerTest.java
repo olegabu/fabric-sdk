@@ -1,13 +1,18 @@
 package com.example.fabric2.api;
 
+import com.example.fabric2.flowtools.cli.ConsoleOutputParsers;
+import com.example.fabric2.flowtools.cli.FlowCmdExec;
 import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.Fabric2Service;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
@@ -19,12 +24,15 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @SpringBootTest
 @AutoConfigureWebTestClient
 //@WebFluxTest(controllers = LifecycleChaincodeRestController.class)
-@RequiredArgsConstructor
-@TestConstructor(autowireMode = ALL)
+@ActiveProfiles("test")
 public class LifecycleChaincodeRestControllerTest {
-    private final WebTestClient webTestClient;
+    @Autowired
+    private WebTestClient webTestClient;
 
     @MockBean
+    private FlowCmdExec<Chaincode> chaincodeCmdExec;
+
+    @Autowired
     private Fabric2Service fabric2Service;
 
     @Test

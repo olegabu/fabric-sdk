@@ -2,7 +2,7 @@ package com.example.fabric2.service.management;
 
 import com.example.fabric2.flowtools.cli.ConsoleOutputParsers;
 import com.example.fabric2.flowtools.cli.FlowCmdExec;
-import com.example.fabric2.service.tar.Tar;
+import com.example.fabric2.util.Tar;
 import com.example.fabric2.util.FileUtils;
 import io.vavr.collection.HashMap;
 import lombok.RequiredArgsConstructor;

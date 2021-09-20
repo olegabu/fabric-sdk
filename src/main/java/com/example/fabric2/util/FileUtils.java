@@ -3,6 +3,7 @@ package com.example.fabric2.util;
 import io.vavr.control.Try;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -12,6 +13,24 @@ import java.util.function.Consumer;
 
 @Component
 public class FileUtils {
+
+
+    public Path savePackageToFile(InputStream packageInStream) {
+        Path pkgFilePath = generateTmpFileName("chaincode-from-package", "tar.gz");
+        pkgFilePath = saveStreamToFile(packageInStream, pkgFilePath);
+        return pkgFilePath;
+    }
+
+    public Path saveStreamToFile(InputStream inputStream, Path resultFilePath) {
+        if (inputStream==null) return null;
+        return Try.of(() ->
+        {
+            Files.deleteIfExists(resultFilePath);
+            return Files.copy(inputStream, resultFilePath);
+        })
+                .map(res -> resultFilePath)
+                .getOrElseThrow(e -> new RuntimeException(e));
+    }
 
     public Path generateTmpFileName(String prefix, String suffix) {
         Consumer<Path> deleteTmpFile = path -> Try.of(()->Files.deleteIfExists(path)).map((b)->path);

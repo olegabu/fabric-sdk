@@ -12,6 +12,9 @@ import com.example.fabric2.service.management.PortAssigner;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.reactivestreams.Publisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.codec.multipart.FilePart;
@@ -21,6 +24,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -33,8 +37,31 @@ public class Fabric2Service {
     private final ExternalChaincodeLocalHostService chaincodeHostService;
     private final PortAssigner portAssigner;
 
+    public Flux<Chaincode> getInstalledChaincodes() {
+        return cliOperations.getInstalledChaincodes();
+    }
+
     public Flux<Chaincode> getCommittedChaincodes(String channelId) {
         return cliOperations.getCommittedChaincodes(channelId);
+    }
+
+    public Mono<String> approveChaincode(String channelId, String chaincodeName, String label, String version, String packageId) {
+        return /*cliOperations.getInstalledChaincodes()
+                .filter(c -> StringUtils.equals(packageId, c.getPackageId()))
+                .take(1)
+                .flatMap(c ->*/
+                getChaincodeApprovalSequence(channelId, chaincodeName, packageId)
+                        .map(lastApprovalSequence -> lastApprovalSequence + 1)
+                .map(String::valueOf);
+//                        .flatMap(newSequenceNum -> cliOperations.approveChaincode(channelId, chaincodeName, version, packageId, newSequenceNum));
+    }
+
+    @NotNull
+    private Mono<Integer> getChaincodeApprovalSequence(String channelId, String chaincodeName, String packageId) {
+        return Mono.from(cliOperations.getApprovedChaincodes(channelId, chaincodeName)
+                .filter(a -> StringUtils.equals(packageId, a.getPackageId()))
+                .map(a -> a.getApprovedSequence())
+                .switchIfEmpty(Flux.just(0)));
     }
 
 

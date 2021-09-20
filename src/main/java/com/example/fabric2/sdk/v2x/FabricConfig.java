@@ -44,11 +44,12 @@ public class FabricConfig {
 
 //    private final PrivateKey pk = X509EncodedKeySpec
 
-    @PostConstruct
+//    @PostConstruct
     public void init() throws IllegalAccessException, InvocationTargetException, InvalidArgumentException, InstantiationException, NoSuchMethodException, CryptoException, ClassNotFoundException, TransactionException, ProposalException {
         HFClient orgClient = HFClient.createNewInstance();
         orgClient.setCryptoSuite(CryptoSuite.Factory.getCryptoSuite());
 
+        //TODO: experimental code
         Path signCertPemFile = Path.of(cryptoConfigDir, "peerOrganizations", org + "." + domain, "users", "Admin@" + org + "." + domain, "msp", "signcerts", "Admin@" + org + "." + domain + "-cert.pem");
         Path privateKeyDir = Path.of(cryptoConfigDir, "peerOrganizations", org + "." + domain, "users", "Admin@" + org + "." + domain, "msp", "keystore");
 
@@ -71,10 +72,12 @@ public class FabricConfig {
 
         User user = orgClient.setUserContext(adminUser);
 
+/*
         Channel test = orgClient.newChannel("test");
         test.initialize();
 
         Channel channel = test.joinPeer(orgClient.newPeer("peer0.org1.example.com:7051", "grpcs://localhost:7051"));
+*/
 
 
     }

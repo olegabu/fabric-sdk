@@ -31,7 +31,7 @@ public class FlowCmdExecTest {
         Flux<Chaincode> exec = chaincodeFlowCmdExec.exec(
                 new String[]{"docker", "exec", cliDockerContainerName, "peer", "lifecycle", "chaincode",
                         "querycommitted", "--channelID", "common"},
-                ConsoleOutputParsers.ConsoleLinesToChaincodeParser, HashMap.empty());
+                ConsoleOutputParsers.ConsoleCommitedListToChaincodesParser, HashMap.empty());
 
         StepVerifier.create(exec)
                 .expectNext(new Chaincode("dns", "1.0"))

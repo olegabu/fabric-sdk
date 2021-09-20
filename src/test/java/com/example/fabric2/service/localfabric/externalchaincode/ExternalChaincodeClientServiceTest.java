@@ -4,7 +4,6 @@ import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
 import com.example.fabric2.service.management.PortAssigner;
-import com.example.fabric2.util.CommonUtils;
 import com.example.fabric2.util.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
@@ -28,10 +27,8 @@ public class ExternalChaincodeClientServiceTest {
 
     @MockBean
     PortAssigner portAssigner;
-    @MockBean
-    FileUtils tmpFiles;
     @MockBean(answer = Answers.CALLS_REAL_METHODS)
-    CommonUtils utils;
+    FileUtils fileUtils;
     @Autowired
     private ExternalChaincodeLocalHostService hostService;
 
@@ -42,8 +39,10 @@ public class ExternalChaincodeClientServiceTest {
         ExternalChaincodeConnection connectionJson = ExternalChaincodeConnection.of("localhost", 9991, "TODO");
 
 //        Mockito.when(portAssigner.assignRemotePort(SDK_CONNECTION)).thenReturn(Mono.just(9990));
-        Mockito.when(tmpFiles.generateTmpFileName(Mockito.anyString(), Mockito.anyString())).thenReturn(Path.of("./tmp/test.tar.gz"));
-        Mockito.when(utils.saveStreamToFile(Mockito.any(), Mockito.any()))
+        //TODO: add approach of provisioning created file to container during tests (or avoid files, use InputStream)
+
+        Mockito.when(fileUtils.generateTmpFileName(Mockito.anyString(), Mockito.anyString())).thenReturn(Path.of("./tmp/test.tar.gz"));
+        Mockito.when(fileUtils.saveStreamToFile(Mockito.any(), Mockito.any()))
                 .thenAnswer(invocation -> {
                     invocation.callRealMethod();
                     Files.copy(Path.of("./tmp/test.tar.gz"), Path.of("../fabric-starter/chaincode/test.tar.gz"), StandardCopyOption.REPLACE_EXISTING);
