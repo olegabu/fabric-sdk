@@ -14,7 +14,6 @@ import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.reactivestreams.Publisher;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.codec.multipart.FilePart;
@@ -24,7 +23,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.InputStream;
-import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -60,8 +58,9 @@ public class Fabric2Service {
     private Mono<Integer> getChaincodeApprovalSequence(String channelId, String chaincodeName, String packageId) {
         return Mono.from(cliOperations.getApprovedChaincodes(channelId, chaincodeName)
                 .filter(a -> StringUtils.equals(packageId, a.getPackageId()))
-                .map(a -> a.getApprovedSequence())
-                .switchIfEmpty(Flux.just(0)));
+                .map(a -> a.getApprovedSequence()))
+                .onErrorReturn(0)
+                .switchIfEmpty(Mono.just(0));
     }
 
 
