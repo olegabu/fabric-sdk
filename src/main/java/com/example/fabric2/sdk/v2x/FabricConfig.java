@@ -70,7 +70,7 @@ public class FabricConfig {
 
         FabricUser adminUser = new FabricUser(org, "admin", enrollSecret, adminEnrollment);
 
-        User user = orgClient.setUserContext(adminUser);
+        User user = orgClient.setUserContext(adminUser);// TODO: move to network init class
 
 /*
         Channel test = orgClient.newChannel("test");

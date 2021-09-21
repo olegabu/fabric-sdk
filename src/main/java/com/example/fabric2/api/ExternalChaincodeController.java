@@ -3,6 +3,7 @@ package com.example.fabric2.api;
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.dto.SdkAgentConnection;
+import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.Fabric2Service;
 import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class ExternalChaincodeController {
     @CrossOrigin
     @PostMapping(path = "/install/{label}/{type}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Publisher<Tuple2<ExternalChaincodeConnection, String>> installExternalChaincode(
+    public Publisher<Tuple2<ExternalChaincodeConnection, Chaincode>> installExternalChaincode(
             @PathVariable String label,
             @PathVariable String type,
             @PathVariable String version,

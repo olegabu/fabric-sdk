@@ -2,9 +2,11 @@ package com.example.fabric2.service.localfabric.externalchaincode;
 
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
+import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
 import com.example.fabric2.service.management.PortAssigner;
 import com.example.fabric2.util.FileUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mockito;
@@ -49,10 +51,10 @@ public class ExternalChaincodeClientServiceTest {
                     return Path.of("/opt/chaincode/test.tar.gz");
                 });
 
-        Mono<String> result = hostService.installExternalChaincodePeerPart(metadata, connectionJson);
+        Mono<Chaincode> result = hostService.installExternalChaincodePeerPart(metadata, connectionJson);
 
         StepVerifier.create(result)
-                .expectNextCount(1)
+                .assertNext(chaincode-> Assertions.assertNotEquals(Chaincode.empty, chaincode))
                 .verifyComplete();
 
     }

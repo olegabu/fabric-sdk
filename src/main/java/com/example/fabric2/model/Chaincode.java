@@ -23,20 +23,18 @@ public class Chaincode {
     private Integer approvedSequence;
     private Boolean initRequired;
 
-    public static Chaincode ofInstalled(String name, String packageId, String label) {
+    public static Chaincode ofInstalled(String packageId, String label) {
         Chaincode result = new Chaincode();
-        result.name = name;
         result.packageId = packageId;
         result.label = label;
         return result;
     }
 
-    public static Chaincode ofApproved(String approvedSequence, String version, String packageId, String label, String initRequired) {
+    public static Chaincode ofApproved(String approvedSequence, String version, String packageId, String initRequired) {
         Chaincode result = new Chaincode();
         result.approvedSequence = Integer.valueOf(approvedSequence);
         result.version = version;
         result.packageId = packageId;
-        result.label = label;
         result.initRequired = BooleanUtils.toBoolean(initRequired);
         return result;
     }
@@ -62,7 +60,13 @@ public class Chaincode {
     public static Chaincode fromInstalledLine(String line) {
         Pattern p = Pattern.compile("Package ID: (.+):(.+), Label: (.+)");
         Matcher m = p.matcher(line);
-        return m.find() ? Chaincode.ofInstalled(m.group(1), m.group(2), m.group(3)) : Chaincode.empty;
+        return m.find() ? Chaincode.ofInstalled(m.group(2), m.group(3)) : Chaincode.empty;
+    }
+
+    public static Chaincode fromInstallChaincodeCmdResult(String consoleOutput) {
+        Pattern p = Pattern.compile("Chaincode code package identifier: (.+):(.+)", Pattern.MULTILINE);
+        Matcher m = p.matcher(consoleOutput);
+        return m.find() ? Chaincode.ofInstalled(m.group(2), m.group(1)) : Chaincode.empty;
     }
 
     /**
@@ -77,9 +81,9 @@ public class Chaincode {
      * @return
      */
     public static Chaincode fromApprovedLine(String line) {
-        Pattern p = Pattern.compile("sequence: (.+), version: (.+), init-required: (.+), package-id: (.+):(.+), endorsement plugin: (.+), validation plugin: (.+)");
+        Pattern p = Pattern.compile("sequence: (.+), version: (.+), init-required: (.+), package-id: (.+), endorsement plugin: (.+), validation plugin: (.+)");
         Matcher m = p.matcher(line);
-        return m.find() ? Chaincode.ofApproved(m.group(1), m.group(2), m.group(5), m.group(4), m.group(3)) : Chaincode.empty;
+        return m.find() ? Chaincode.ofApproved(m.group(1), m.group(2), m.group(4), m.group(3)) : Chaincode.empty;
     }
 
 

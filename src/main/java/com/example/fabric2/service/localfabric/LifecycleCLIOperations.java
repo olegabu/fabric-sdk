@@ -6,6 +6,8 @@ import com.example.fabric2.model.Chaincode;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -33,6 +35,8 @@ public class LifecycleCLIOperations {
     private String CORE_PEER_ADDRESS;
     @Value("${core_peer_tls_enabled}")
     private String CORE_PEER_TLS_ENABLED;
+    @Value("${orderer_listen_port:7050}")
+    private String ORDERER_GENERAL_LISTENPORT;
     @Value("${fabric.peer.command:peer}")
     private String peerCommand;
 
@@ -41,42 +45,61 @@ public class LifecycleCLIOperations {
 
 
     public Flux<Chaincode> getInstalledChaincodes() {
-        String[] command = joinCommand(peerCommand, "lifecycle chaincode queryinstalled", "--tls", "--cafile",
-                String.format("/etc/hyperledger/crypto-config/ordererOrganizations/%s/msp/tlscacerts/tlsca.%s-cert.pem", ORDERER_DOMAIN, ORDERER_DOMAIN));
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode queryinstalled"));
         return chaincodeCmdExec.exec(command, ConsoleOutputParsers.ConsoleInstalledListToChaincodesParser, prepareEnvironment());
     }
 
     public Flux<Chaincode> getApprovedChaincodes(String channelId, String chaincodeName) {
-        String[] command = joinCommand(peerCommand, "lifecycle chaincode queryapproved", "--channelID", channelId, "--name", chaincodeName);
-        return chaincodeCmdExec.exec(joinTLSOpts(command), ConsoleOutputParsers.ConsoleApprovedListToChaincodesParser, prepareEnvironment());
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode queryapproved", "--channelID", channelId, "--name", chaincodeName));
+        return chaincodeCmdExec.exec(command, ConsoleOutputParsers.ConsoleApprovedListToChaincodesParser, prepareEnvironment());
     }
 
     public Flux<String> getApprovedString(String channelId, String chaincodeName) {
-        String[] command = joinCommand(peerCommand, "lifecycle chaincode queryapproved", "--channelID", channelId, "--name", chaincodeName);
-        return plainCmdExec.exec(joinTLSOpts(command), ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment());
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode queryapproved", "--channelID", channelId, "--name", chaincodeName));
+        return plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment());
     }
 
     public Flux<Chaincode> getCommittedChaincodes(String channelId) {
-        String[] command = joinCommand(peerCommand, "lifecycle chaincode querycommitted --channelID", channelId);
-        return chaincodeCmdExec.exec(joinTLSOpts(command), ConsoleOutputParsers.ConsoleCommitedListToChaincodesParser, prepareEnvironment());
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode querycommitted --channelID", channelId));
+        return chaincodeCmdExec.exec(command, ConsoleOutputParsers.ConsoleCommitedListToChaincodesParser, prepareEnvironment());
     }
-
 
     public Mono<String> installChaincodeFromPackage(Path pkgTempPath) {
         String[] command = joinCommand(peerCommand, "lifecycle chaincode install ", pkgTempPath.toAbsolutePath().toString());
-        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment()));
+        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment()));
     }
 
     public Mono<String> approveChaincode(String channelId, String chaincodeName, String version, String packageId, Integer sequence) {
-        String[] command = joinCommand(peerCommand, "lifecycle chaincode approveformyorg",
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode approveformyorg",
                 "--channelID", channelId,
                 "--name", chaincodeName,
                 "--version", version,
                 "--package-id", packageId,
                 "--sequence", String.valueOf(sequence),
-                "--o", String.format("%s.%s", ORDERER_NAME, ORDERER_DOMAIN)
-        );
-        return Mono.from(plainCmdExec.exec(joinTLSOpts(command), ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment()));
+                "-o", getOrdererAddressParam()
+        ));
+        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment()));
+    }
+
+    public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode checkcommitreadiness",
+                "--channelID", channelId,
+                "--name", chaincodeName,
+                "--version", version,
+                "--sequence", String.valueOf(sequence),
+                "-o", getOrdererAddressParam()));
+
+        Flux<String> commandOutput = plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment());
+
+        return Mono.from(commandOutput.skip(1)
+                .map(orgStatus -> StringUtils.split(":"))
+                .filter(arr -> StringUtils.equals(org, arr[0]))
+                .map(arr -> BooleanUtils.toBoolean(arr[1]))
+                .defaultIfEmpty(false));
+    }
+
+    private String getOrdererAddressParam() {
+        return String.format("%s.%s:%s", ORDERER_NAME, ORDERER_DOMAIN, ORDERER_GENERAL_LISTENPORT);
     }
 
 

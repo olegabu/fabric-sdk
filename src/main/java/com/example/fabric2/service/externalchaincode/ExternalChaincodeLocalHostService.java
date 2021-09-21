@@ -2,6 +2,7 @@ package com.example.fabric2.service.externalchaincode;
 
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
+import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
 import com.example.fabric2.util.ChaincodeUtils;
 import com.example.fabric2.util.FileUtils;
@@ -24,17 +25,19 @@ public class ExternalChaincodeLocalHostService {
     private final FileUtils fileUtils;
     private final ChaincodeUtils chaincodeUtils;
 
-    public Mono<String> installExternalChaincodePeerPart(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connectionJson) {
+    public Mono<Chaincode> installExternalChaincodePeerPart(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connectionJson) {
         return chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(metadata, connectionJson)
                 .flatMap(inputStreamOfPackage -> installChaincodeFromInputStreamPackage(inputStreamOfPackage));
     }
 
 
-    public Mono<String> installChaincodeFromInputStreamPackage(InputStream packageInStream) {
+    public Mono<Chaincode> installChaincodeFromInputStreamPackage(InputStream packageInStream) {
         Path path = fileUtils.savePackageToFile(packageInStream);
         return Try.of(() -> cliOperations.installChaincodeFromPackage(path))
                 .andFinally(() -> Try.of(() -> Files.deleteIfExists(path)))
-                .get();
+                .get()
+                .map(Chaincode::fromInstallChaincodeCmdResult)
+                .filter(chaincode -> chaincode != Chaincode.empty);
 
 
         /*    public Flux<String> installChaincode(String label, String version, String lang, String path, ) {
@@ -49,4 +52,7 @@ public class ExternalChaincodeLocalHostService {
     }
 
 
+    public Object checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
+        return cliOperations.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
+    }
 }
