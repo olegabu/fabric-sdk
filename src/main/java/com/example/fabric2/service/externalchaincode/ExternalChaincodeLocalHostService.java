@@ -56,7 +56,7 @@ public class ExternalChaincodeLocalHostService {
         return cliOperations.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
     }
 
-    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer sequence) {
-        return cliOperations.commitChaincode(channelId, chaincodeName, version, sequence);
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence) {
+        return cliOperations.commitChaincode(channelId, chaincodeName, version, newSequence);
     }
 }

@@ -78,20 +78,19 @@ public class Fabric2ServiceTest {
     private Mono<String> installApproveCommitChaincode(String org, String name, String version) {
         final ExternalChaincodeMetadata metadata = ExternalChaincodeMetadata.of(name, "external", version);
 
-        Mono<Tuple2<String, Integer>> installApprove = chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(metadata, TEST_EXTERNAL_CONNECTION)
+        Mono<Chaincode> installApprove = chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(metadata, TEST_EXTERNAL_CONNECTION)
                 .flatMap(is -> fabric2Service.installChaincodeFromPackage(is))
-                .flatMap(chaincode -> fabric2Service.approveChaincode("common", name, version, chaincode.getPackageId()));
+                .flatMap(chaincode -> fabric2Service.approveChaincode("common", name, version, chaincode.getPackageId(), false));
 
 
-        Mono<Tuple2<Chaincode, Integer>> approvedChaincodesFilteredByNewPackageId = installApprove/*Mono.just("1ae99bbd95049d1456551e2ffe6e9fc54ec9123f0612c63558940d623136f4c2")*/
-                .flatMap(approveResult -> Mono.from(fabric2Service.getApprovedChaincodes("common", name)
-                        .filter(approved -> approved.getPackageId().equals(approveResult._1))
-                        .map(approvedChaincode -> Tuple.of(approvedChaincode, approveResult._2)))
-                );
+        Mono<Chaincode> approvedChaincodesFilteredByNewPackageId = installApprove/*Mono.just("1ae99bbd95049d1456551e2ffe6e9fc54ec9123f0612c63558940d623136f4c2")*/
+                .flatMap(installedChaincode -> Mono.from(fabric2Service.getApprovedChaincodes("common", name)
+                        .filter(approvedChaincode -> approvedChaincode.getPackageId().equals(installedChaincode.getPackageId()))
+                ));
 
         Mono<String> readinessAndCommit = approvedChaincodesFilteredByNewPackageId
-                .flatMap(approveResult -> fabric2Service.checkCommitReadiness(org, "common", name, version, approveResult._2)
-                        .flatMap(isReady -> fabric2Service.commitChaincode("common", name, version, approveResult._2)));
+                .flatMap(approveChaincode -> fabric2Service.checkCommitReadiness(org, "common", name, version, approveChaincode.getSequence())
+                        .flatMap(isReady -> fabric2Service.commitChaincode("common", name, version, approveChaincode.getSequence())));
 
         return readinessAndCommit;
     }

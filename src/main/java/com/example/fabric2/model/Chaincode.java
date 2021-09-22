@@ -29,9 +29,13 @@ public class Chaincode {
         return result;
     }
 
-    public static Chaincode ofApproved(String approvedSequence, String version, String packageId, String initRequired) {
+    public static Chaincode ofApproved(String sequence, String version, String packageId, String initRequired) {
+        return ofApproved(Integer.valueOf(sequence), version, packageId, BooleanUtils.toBoolean(initRequired));
+    }
+
+    public static Chaincode ofApproved(Integer sequence, String version, String packageId, Boolean initRequired) {
         Chaincode result = new Chaincode();
-        result.sequence = Integer.valueOf(approvedSequence);
+        result.sequence = Integer.valueOf(sequence);
         result.version = version;
         result.packageId = packageId;
         result.initRequired = BooleanUtils.toBoolean(initRequired);

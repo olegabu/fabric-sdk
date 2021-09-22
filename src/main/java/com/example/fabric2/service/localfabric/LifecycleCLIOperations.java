@@ -70,7 +70,7 @@ public class LifecycleCLIOperations {
         return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment()));
     }
 
-    public Mono<String> approveChaincode(String channelId, String chaincodeName, String version, String packageId, Integer sequence) {
+    public Mono<String> approveChaincode(String channelId, String chaincodeName, String version, String packageId, Integer sequence, Boolean initRequired) {
         String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode approveformyorg",
                 "--channelID", channelId,
                 "--name", chaincodeName,
@@ -79,6 +79,9 @@ public class LifecycleCLIOperations {
                 "--sequence", String.valueOf(sequence),
                 "-o", getOrdererAddressParam()
         ));
+        if (initRequired) {
+            command = joinCommand("--init-required", BooleanUtils.toStringTrueFalse(initRequired));
+        }
         return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment()));
     }
 
@@ -95,16 +98,16 @@ public class LifecycleCLIOperations {
         return Mono.from(commandOutput.skip(1)
                 .map(orgStatus -> StringUtils.split(":"))
                 .filter(arr -> StringUtils.equals(org, ArrayUtils.get(arr, 0)))
-                .map(arr -> BooleanUtils.toBoolean(ArrayUtils.get(arr,1)))
+                .map(arr -> BooleanUtils.toBoolean(ArrayUtils.get(arr, 1)))
                 .defaultIfEmpty(false));
     }
 
-    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer sequence) {
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence) {
         String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode commit",
                 "--channelID", channelId,
                 "--name", chaincodeName,
                 "--version", version,
-                "--sequence", String.valueOf(sequence),
+                "--sequence", String.valueOf(newSequence),
                 "-o", getOrdererAddressParam()));
         return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment())).log();
     }
