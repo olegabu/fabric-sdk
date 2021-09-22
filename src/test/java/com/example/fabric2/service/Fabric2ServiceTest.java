@@ -5,8 +5,6 @@ import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.util.ChaincodeUtils;
 import com.example.fabric2.util.FileUtils;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
