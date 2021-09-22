@@ -5,12 +5,9 @@ import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.util.ChaincodeUtils;
 import com.example.fabric2.util.FileUtils;
-import com.example.fabric2.util.Tar;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import org.junit.Before;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -26,7 +22,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.function.BiFunction;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 @SpringBootTest
@@ -44,8 +40,10 @@ public class Fabric2ServiceTest {
     @Autowired
     private ChaincodeUtils chaincodeUtils;
 
-    public static final ExternalChaincodeMetadata METADATA = ExternalChaincodeMetadata.of("test", "external", "1.0");
-    public static final ExternalChaincodeConnection TEST_EXTERNAL_CONNECTION = ExternalChaincodeConnection.of("localhost", 9991, "TODO");
+
+    private static final String TEST_CHAINCODE = "test-chaincode-" + new Random().nextInt(10000);
+    private static final ExternalChaincodeMetadata METADATA = ExternalChaincodeMetadata.of(TEST_CHAINCODE, "external", "1.0");
+    private static final ExternalChaincodeConnection TEST_EXTERNAL_CONNECTION = ExternalChaincodeConnection.of("localhost", 9991, "TODO");
 
 
     @Test
@@ -65,25 +63,37 @@ public class Fabric2ServiceTest {
 
         prepareMockitoForDockerContainer();
 
-        Mono<String> installApprove = chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(METADATA, TEST_EXTERNAL_CONNECTION).flatMap(is ->
-                fabric2Service.installChaincodeFromPackage(is)).flatMap(chaincode ->
-                fabric2Service.approveChaincode("common", "test", "1.0", chaincode.getPackageId())
-                        .map(res -> chaincode.getPackageId()));
-
-        Mono<Chaincode> approvedChaincodesFilteredByNewPackageId = /*installApprove*/Mono.just("1ae99bbd95049d1456551e2ffe6e9fc54ec9123f0612c63558940d623136f4c2").flatMap(newPackageId -> Mono.from(
-                fabric2Service.getApprovedChaincodes("common", "test")
-                        .filter(approved -> approved.getPackageId().equals(newPackageId)))
-        );
-
-
-        approvedChaincodesFilteredByNewPackageId.map(
-                approvedChaincode -> fabric2Service.checkCommitReadiness(ORG, "common", "test", "1.0", 1)        )
-                .map(isReady->fabric2Service.commitChaincode("common", "test", "1.0", 1));// TODO
-
-
-        StepVerifier.create(approvedChaincodesFilteredByNewPackageId)
+        Mono<String> readinessAndCommit = installApproveCommitChaincode(ORG, TEST_CHAINCODE, "1.0");
+        StepVerifier.create(readinessAndCommit)
                 .expectNextCount(1)
                 .verifyComplete();
+
+        readinessAndCommit = installApproveCommitChaincode(ORG, TEST_CHAINCODE, "2.0");
+        StepVerifier.create(readinessAndCommit)
+                .expectNextCount(1)
+                .verifyComplete();
+    }
+
+    @NotNull
+    private Mono<String> installApproveCommitChaincode(String org, String name, String version) {
+        final ExternalChaincodeMetadata metadata = ExternalChaincodeMetadata.of(name, "external", version);
+
+        Mono<Tuple2<String, Integer>> installApprove = chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(metadata, TEST_EXTERNAL_CONNECTION)
+                .flatMap(is -> fabric2Service.installChaincodeFromPackage(is))
+                .flatMap(chaincode -> fabric2Service.approveChaincode("common", name, version, chaincode.getPackageId()));
+
+
+        Mono<Tuple2<Chaincode, Integer>> approvedChaincodesFilteredByNewPackageId = installApprove/*Mono.just("1ae99bbd95049d1456551e2ffe6e9fc54ec9123f0612c63558940d623136f4c2")*/
+                .flatMap(approveResult -> Mono.from(fabric2Service.getApprovedChaincodes("common", name)
+                        .filter(approved -> approved.getPackageId().equals(approveResult._1))
+                        .map(approvedChaincode -> Tuple.of(approvedChaincode, approveResult._2)))
+                );
+
+        Mono<String> readinessAndCommit = approvedChaincodesFilteredByNewPackageId
+                .flatMap(approveResult -> fabric2Service.checkCommitReadiness(org, "common", name, version, approveResult._2)
+                        .flatMap(isReady -> fabric2Service.commitChaincode("common", name, version, approveResult._2)));
+
+        return readinessAndCommit;
     }
 
 

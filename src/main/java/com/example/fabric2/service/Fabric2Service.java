@@ -48,7 +48,7 @@ public class Fabric2Service {
         return cliOperations.getCommittedChaincodes(channelId);
     }
 
-    public Mono<String> approveChaincode(String channelId, String chaincodeName, String version, String packageId) {
+    public Mono<Tuple2<String, Integer>> approveChaincode(String channelId, String chaincodeName, String version, String packageId) {
         return /*cliOperations.getInstalledChaincodes()
                 .filter(c -> StringUtils.equals(packageId, c.getPackageId()))
                 .take(1)
@@ -56,16 +56,18 @@ public class Fabric2Service {
                 getChaincodeApprovalSequence(channelId, chaincodeName, packageId)
                         .map(lastApprovalSequence -> lastApprovalSequence + 1)
                         .flatMap(newSequenceNum ->
-                                cliOperations.approveChaincode(channelId, chaincodeName, version, packageId, newSequenceNum));
+                                cliOperations.approveChaincode(channelId, chaincodeName, version, packageId, newSequenceNum)
+                                        .map(out->Tuple.of(packageId, newSequenceNum)));
     }
 
     @NotNull
     private Mono<Integer> getChaincodeApprovalSequence(String channelId, String chaincodeName, String packageId) {
-        return Mono.from(cliOperations.getApprovedChaincodes(channelId, chaincodeName)
-                .filter(a -> StringUtils.equals(packageId, a.getPackageId()))
-                .map(a -> a.getApprovedSequence()))
+        return Mono.from(cliOperations.getCommittedChaincodes(channelId)
+                .filter(committedChaincode->StringUtils.equals(chaincodeName, committedChaincode.getName())) //TODO: add getCommittedChaincodes (channel, chaincodeName)
+//                .filter(a -> StringUtils.equals(packageId, a.getPackageId()))
+                .map(Chaincode::getSequence))
                 .onErrorReturn(0)
-                .switchIfEmpty(Mono.just(0));
+                .defaultIfEmpty(0);
     }
 
 
@@ -106,11 +108,11 @@ public class Fabric2Service {
         return chaincodeHostService.installChaincodeFromInputStreamPackage(packageInStream);
     }
 
-    public Object checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
+    public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
         return chaincodeHostService.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
     }
 
-    public Object commitChaincode(String channelId, String chaincodeName, String version, Integer sequence) {
-        return null;// TODO
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer sequence) {
+        return chaincodeHostService.commitChaincode(channelId, chaincodeName, version, sequence);
     }
 }

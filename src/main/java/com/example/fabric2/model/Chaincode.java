@@ -3,7 +3,6 @@ package com.example.fabric2.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 
 import java.util.regex.Matcher;
@@ -20,7 +19,7 @@ public class Chaincode {
     private String version;
     private String packageId;
     private String label;
-    private Integer approvedSequence;
+    private Integer sequence;
     private Boolean initRequired;
 
     public static Chaincode ofInstalled(String packageId, String label) {
@@ -32,10 +31,18 @@ public class Chaincode {
 
     public static Chaincode ofApproved(String approvedSequence, String version, String packageId, String initRequired) {
         Chaincode result = new Chaincode();
-        result.approvedSequence = Integer.valueOf(approvedSequence);
+        result.sequence = Integer.valueOf(approvedSequence);
         result.version = version;
         result.packageId = packageId;
         result.initRequired = BooleanUtils.toBoolean(initRequired);
+        return result;
+    }
+
+    public static Chaincode ofCommitted(String name, String version, String committedSequence) {
+        Chaincode result = new Chaincode();
+        result.name = name;
+        result.version = version;
+        result.sequence = Integer.valueOf(committedSequence);
         return result;
     }
 
@@ -117,6 +124,6 @@ public class Chaincode {
     public static Chaincode fromCommittedLine(String line) {
         Pattern p = Pattern.compile("Name: (.+), Version: (.+), Sequence: (.+), Endorsement Plugin: (.+), Validation Plugin: (.+)");
         Matcher m = p.matcher(line);
-        return m.find() ? new Chaincode(m.group(1), m.group(2)) : Chaincode.empty;
+        return m.find() ? Chaincode.ofCommitted(m.group(1), m.group(2), m.group(3)) : Chaincode.empty;
     }
 }

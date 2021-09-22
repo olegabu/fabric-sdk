@@ -52,7 +52,11 @@ public class ExternalChaincodeLocalHostService {
     }
 
 
-    public Object checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
+    public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
         return cliOperations.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
+    }
+
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer sequence) {
+        return cliOperations.commitChaincode(channelId, chaincodeName, version, sequence);
     }
 }

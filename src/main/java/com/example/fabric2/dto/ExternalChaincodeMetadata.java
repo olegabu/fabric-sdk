@@ -6,11 +6,11 @@ import org.apache.commons.lang3.StringUtils;
 @Data(staticConstructor = "of")
 public class ExternalChaincodeMetadata {
 
-    private final String label;
+    private final String name;
     private final String type;
     private final String version;
 
-    public String label() {
-        return StringUtils.isBlank(version) ? label : label + "_" + version;
+    public String getLabel() {
+        return StringUtils.isBlank(version) ? name : name + "_" + version;
     }
 }

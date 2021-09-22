@@ -6,6 +6,7 @@ import com.example.fabric2.model.Chaincode;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,10 +94,21 @@ public class LifecycleCLIOperations {
 
         return Mono.from(commandOutput.skip(1)
                 .map(orgStatus -> StringUtils.split(":"))
-                .filter(arr -> StringUtils.equals(org, arr[0]))
-                .map(arr -> BooleanUtils.toBoolean(arr[1]))
+                .filter(arr -> StringUtils.equals(org, ArrayUtils.get(arr, 0)))
+                .map(arr -> BooleanUtils.toBoolean(ArrayUtils.get(arr,1)))
                 .defaultIfEmpty(false));
     }
+
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer sequence) {
+        String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode commit",
+                "--channelID", channelId,
+                "--name", chaincodeName,
+                "--version", version,
+                "--sequence", String.valueOf(sequence),
+                "-o", getOrdererAddressParam()));
+        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment())).log();
+    }
+
 
     private String getOrdererAddressParam() {
         return String.format("%s.%s:%s", ORDERER_NAME, ORDERER_DOMAIN, ORDERER_GENERAL_LISTENPORT);
@@ -127,3 +139,4 @@ public class LifecycleCLIOperations {
     }
 
 }
+
