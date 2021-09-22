@@ -36,7 +36,8 @@ public class LifecycleChaincodeRestController {
      */
     @GetMapping(path = "/channel/{channelId}/chaincodes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Chaincode> getCommittedChaincodes(@PathVariable String channelId) {
-        return fabric2Service.getCommittedChaincodes(channelId);
+        Flux<Chaincode> committedChaincodes = fabric2Service.getCommittedChaincodes(channelId);
+        return committedChaincodes;
     }
 
 

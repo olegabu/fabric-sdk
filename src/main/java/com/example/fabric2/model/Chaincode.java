@@ -50,9 +50,10 @@ public class Chaincode {
         return result;
     }
 
-    public Chaincode(String name, String version) {
+    public Chaincode(String name, String version, Integer sequence) {
         this.name = name;
         this.version = version;
+        this.sequence = sequence;
     }
 
     /**

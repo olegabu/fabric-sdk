@@ -1,25 +1,20 @@
 package com.example.fabric2.api;
 
-import com.example.fabric2.flowtools.cli.ConsoleOutputParsers;
 import com.example.fabric2.flowtools.cli.FlowCmdExec;
 import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.Fabric2Service;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -39,8 +34,8 @@ public class LifecycleChaincodeRestControllerTest {
     void testController() {
 
         when(fabric2Service.getCommittedChaincodes("common")).thenReturn(Flux.just(
-                new Chaincode("dns", "1.0"),
-                new Chaincode("test", "2.0")));
+                new Chaincode("dns", "1.0", 1),
+                new Chaincode("test", "2.0", 2)));
 
         Flux<Chaincode> responseBody = webTestClient.get()
                 .uri("/lifecycle/channel/common/chaincodes")
@@ -52,8 +47,8 @@ public class LifecycleChaincodeRestControllerTest {
                 .getResponseBody();
 
         StepVerifier.create(responseBody)
-                .expectNext(new Chaincode("dns", "1.0"))
-                .expectNext(new Chaincode("test", "2.0"))
+                .expectNext(new Chaincode("dns", "1.0", 1))
+                .expectNext(new Chaincode("test", "2.0", 2))
                 .verifyComplete();
 
     }
