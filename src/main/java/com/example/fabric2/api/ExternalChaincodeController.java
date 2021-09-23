@@ -13,7 +13,8 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-@RestController(value = "/externalchaincode")
+@RestController
+@RequestMapping(value = "/externalchaincode")
 @RequiredArgsConstructor
 public class ExternalChaincodeController {
 
@@ -34,15 +35,14 @@ public class ExternalChaincodeController {
     }
 
     @CrossOrigin
-    @PostMapping(path = "/install/{label}/{type}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+    @PostMapping(path = "/install/{name}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Publisher<Tuple2<ExternalChaincodeConnection, Chaincode>> installExternalChaincode(
-            @PathVariable String label,
-            @PathVariable String type,
+            @PathVariable String name,
             @PathVariable String version,
             @RequestParam SdkAgentConnection sdkAgentConnection) {
 
-        return fabric2Service.installExternalChaincodePeerPart(ExternalChaincodeMetadata.of(label, type, version), sdkAgentConnection);
+        return fabric2Service.installExternalChaincodePeerPart(ExternalChaincodeMetadata.of(name, "external", version), sdkAgentConnection);
     }
 
 }

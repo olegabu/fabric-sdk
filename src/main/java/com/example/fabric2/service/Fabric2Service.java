@@ -87,11 +87,6 @@ public class Fabric2Service {
 
     }
 
-
-    public Mono<String> approveChaincode(String channelId, String chaincodeName) {
-        return null;//TODO
-    }
-
     private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
         return ExternalChaincodeConnection.of(sdkAgentConnection.getHost(), chaincodePort, "TODO");
     }
