@@ -40,7 +40,7 @@ public class ExternalChaincodeController {
     public Publisher<Tuple2<ExternalChaincodeConnection, Chaincode>> installExternalChaincode(
             @PathVariable String name,
             @PathVariable String version,
-            @RequestParam SdkAgentConnection sdkAgentConnection) {
+            @ModelAttribute SdkAgentConnection sdkAgentConnection) {
 
         return fabric2Service.installExternalChaincodePeerPart(ExternalChaincodeMetadata.of(name, "external", version), sdkAgentConnection);
     }
