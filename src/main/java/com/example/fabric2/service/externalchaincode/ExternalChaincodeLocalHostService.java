@@ -33,12 +33,16 @@ public class ExternalChaincodeLocalHostService {
 
     public Mono<Chaincode> installChaincodeFromInputStreamPackage(InputStream packageInStream) {
         Path path = fileUtils.savePackageToFile(packageInStream);
-        return Try.of(() -> cliOperations.installChaincodeFromPackage(path))
-                .andFinally(() -> Try.of(() -> Files.deleteIfExists(path)))
-                .get()
+        return Try.of(() -> cliOperations.installChaincodeFromPackage(path)
                 .map(Chaincode::fromInstallChaincodeCmdResult)
-                .filter(chaincode -> chaincode != Chaincode.empty);
-
+                .filter(chaincode -> chaincode != Chaincode.empty)
+                .doFinally((signal) -> Try.of(() ->
+                {
+                    log.info("Files.deleteIfExists(path)");
+                    Files.deleteIfExists(path);
+                            return true;
+                })))
+                .get();
 
         /*    public Flux<String> installChaincode(String label, String version, String lang, String path, ) {
                 Try.of(()-> {

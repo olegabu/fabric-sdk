@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@RestController("control")
+@RestController()
+@RequestMapping(value = "/control")
 @RequiredArgsConstructor
 public class ManagementController {
 
@@ -19,8 +19,8 @@ public class ManagementController {
     private final PackageRunner packageRunner;
 
     @GetMapping(path = "/assignport")
-    public Flux<Integer> reserveNextFreePort() {
-        return Flux.just(firstPortInPool); //TODO: dynamic, store
+    public Mono<Integer> reserveNextFreePort() {
+        return Mono.just(firstPortInPool); //TODO: dynamic, store
     }
 
     @PostMapping(path = "/run-package-on-system/{name}/{port}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,

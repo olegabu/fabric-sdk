@@ -21,7 +21,7 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @SpringBootTest
 @AutoConfigureWebFlux
@@ -69,7 +69,7 @@ public class ExternalChaincodeClientServiceRemoteInteractionsTest {
 
         SdkAgentConnection sdkConnection = SdkAgentConnection.of(mockWebServer.getHostName(), mockWebServer.getPort());
         FilePart fp = TestUtils.filePartFromResource(TEST_TAR_ZG_FILE);
-        StepVerifier.create(clientService.requestRunExternalChaincode(sdkConnection, TEST_CHAINCODE_LABEL, TEST_CHAINCODE_PORT, Mono.just(fp)))
+        StepVerifier.create(clientService.runExternalChaincode(sdkConnection, TEST_CHAINCODE_LABEL, TEST_CHAINCODE_PORT, Mono.just(fp)))
                 .expectNext("TestSuccess")
                 .verifyComplete();
 

@@ -82,7 +82,7 @@ public class LifecycleCLIOperations {
         if (initRequired) {
             command = joinCommand("--init-required", BooleanUtils.toStringTrueFalse(initRequired));
         }
-        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleLinesToStringParser, prepareEnvironment()));
+        return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment()));
     }
 
     public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {

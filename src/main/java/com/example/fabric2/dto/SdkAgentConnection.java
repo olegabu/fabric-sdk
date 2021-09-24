@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor(staticName = "of")
 public class SdkAgentConnection {
-    private String host;
-    private Integer port;
+    private String agentHost;
+    private Integer agentPort;
 
     public String getAddress() {
-        return host + ":" + port;
+        return agentHost + ":" + agentPort;
     }
 }

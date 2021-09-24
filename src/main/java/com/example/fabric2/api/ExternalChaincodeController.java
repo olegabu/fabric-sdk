@@ -2,10 +2,9 @@ package com.example.fabric2.api;
 
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
+import com.example.fabric2.dto.InstallChaincodeResult;
 import com.example.fabric2.dto.SdkAgentConnection;
-import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.Fabric2Service;
-import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
 import org.reactivestreams.Publisher;
 import org.springframework.http.MediaType;
@@ -28,21 +27,42 @@ public class ExternalChaincodeController {
             @PathVariable String label,
             @PathVariable String type,
             @PathVariable String version,
-            @RequestParam SdkAgentConnection sdkAgentConnection,
+            @ModelAttribute SdkAgentConnection sdkAgentConnection,
+            @ModelAttribute ExternalChaincodeConnection chaincodeConnection,
             @RequestPart("files") Mono<FilePart> filePartFlux) {
 
-        return fabric2Service.deployExternalChaincode(ExternalChaincodeMetadata.of(label, type, version), sdkAgentConnection, filePartFlux);
+        return fabric2Service.deployExternalChaincode(
+                ExternalChaincodeMetadata.of(label, type, version),
+                sdkAgentConnection, chaincodeConnection, filePartFlux);
     }
 
     @CrossOrigin
     @PostMapping(path = "/install/{name}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Publisher<Tuple2<ExternalChaincodeConnection, Chaincode>> installExternalChaincode(
+    public Mono<InstallChaincodeResult> installExternalChaincodePeerPart(
             @PathVariable String name,
             @PathVariable String version,
-            @ModelAttribute SdkAgentConnection sdkAgentConnection) {
+            @ModelAttribute SdkAgentConnection sdkAgentConnection,
+            @ModelAttribute ExternalChaincodeConnection chaincodeConnection
+    ) {
 
-        return fabric2Service.installExternalChaincodePeerPart(ExternalChaincodeMetadata.of(name, "external", version), sdkAgentConnection);
+        return fabric2Service.installExternalChaincodePeerPart(
+                ExternalChaincodeMetadata.of(name, "external", version),
+                sdkAgentConnection, chaincodeConnection);
+    }
+
+    @CrossOrigin
+    @PostMapping(path = "/run/{name}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Mono<String> runExternalChaincode(
+            @PathVariable String name,
+            @PathVariable String version,
+            @ModelAttribute SdkAgentConnection sdkAgentConnection,
+            @ModelAttribute ExternalChaincodeConnection chaincodeConnection,
+            @RequestPart("files") Mono<FilePart> filePartFlux) {
+
+        return fabric2Service.runExternalChaincode(ExternalChaincodeMetadata.of(name, "external", version),
+                sdkAgentConnection, chaincodeConnection, filePartFlux);
     }
 
 }

@@ -26,8 +26,8 @@ public class ExternalChaincodeClientService {
     }
 
 
-    public Mono<String> requestRunExternalChaincode(SdkAgentConnection sdkAgentConnection, String label, Integer chaincodePort,
-                                                    Mono<FilePart> filePartFlux) {
+    public Mono<String> runExternalChaincode(SdkAgentConnection sdkAgentConnection, String label, Integer chaincodePort,
+                                             Mono<FilePart> filePartFlux) {
         return filePartFlux.flatMap(filePart ->
                 webClient.post().uri(sdkAgentConnection.getAddress() + "/control/run-package-on-system/" + label + "/" + chaincodePort)
                         .body(BodyInserters.fromPublisher(filePart.content(), DataBuffer.class))

@@ -2,6 +2,7 @@ package com.example.fabric2.service;
 
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
+import com.example.fabric2.dto.InstallChaincodeResult;
 import com.example.fabric2.dto.SdkAgentConnection;
 import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeClientService;
@@ -9,8 +10,6 @@ import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostS
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
 import com.example.fabric2.service.localfabric.SdkOperations;
 import com.example.fabric2.service.management.PortAssigner;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -72,23 +71,33 @@ public class Fabric2Service {
 
 
     public Mono<String> deployExternalChaincode(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection,
-                                                Mono<FilePart> filePartFlux) {
+                                                ExternalChaincodeConnection chaincodeConnection, Mono<FilePart> filePartFlux) {
 
-        return installExternalChaincodePeerPart(metadata, sdkAgentConnection).flatMap(
-                (tuple2) -> chaincodeClientService.requestRunExternalChaincode(sdkAgentConnection, metadata.getLabel(), tuple2._1.getChaincodePort(), filePartFlux));
+        return installExternalChaincodePeerPart(metadata, sdkAgentConnection, chaincodeConnection)
+                .flatMap((installResult) ->
+                        runExternalChaincode(metadata, sdkAgentConnection, chaincodeConnection, filePartFlux));
     }
 
-    public Mono<Tuple2<ExternalChaincodeConnection, Chaincode>> installExternalChaincodePeerPart(ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection) {
+    public Mono<String> runExternalChaincode(ExternalChaincodeMetadata metadata,
+                                             SdkAgentConnection sdkAgentConnection,
+                                             ExternalChaincodeConnection chaincodeConnection,
+                                             Mono<FilePart> filePartFlux) {
+        return chaincodeClientService.runExternalChaincode(sdkAgentConnection, metadata.getLabel(), chaincodeConnection.getChaincodePort(), filePartFlux);
+    }
 
-        return portAssigner.assignRemotePort(sdkAgentConnection).map(
-                chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection)).flatMap(
-                connectionJson -> chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson)
-                        .map(result -> Tuple.of(connectionJson, result)));
+    public Mono<InstallChaincodeResult> installExternalChaincodePeerPart(
+            ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection, ExternalChaincodeConnection chaincodeConnection) {
+
+        return Mono.justOrEmpty(chaincodeConnection.getChaincodePort())
+                .switchIfEmpty(portAssigner.assignRemotePort(sdkAgentConnection))
+                .map(chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection))
+                .flatMap(connectionJson -> chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson)
+                        .map(result -> new InstallChaincodeResult(connectionJson, result)));
 
     }
 
     private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
-        return ExternalChaincodeConnection.of(sdkAgentConnection.getHost(), chaincodePort, "TODO");
+        return ExternalChaincodeConnection.of(sdkAgentConnection.getAgentHost(), chaincodePort, "TODO");
     }
 
     private MultiValueMap<String, HttpEntity<?>> buildMultipartBody(Mono<FilePart> filePartFlux, ExternalChaincodeMetadata metadata) {
