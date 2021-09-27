@@ -8,6 +8,8 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RestController()
 @RequestMapping(value = "/control")
 @RequiredArgsConstructor
@@ -23,11 +25,13 @@ public class ManagementController {
         return Mono.just(firstPortInPool); //TODO: dynamic, store
     }
 
-    @PostMapping(path = "/run-package-on-system/{name}/{port}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+    @PostMapping(path = {"/run-package-on-system/{chaincodeName}/{port}",  "/run-package-on-system/{chaincodeName}/"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Mono<String> runChaincodeOnHost(@PathVariable String name, @PathVariable Integer port, @RequestPart Mono<FilePart> filePartMono) {
+    public Mono<String> runChaincodeOnHost(@PathVariable String chaincodeName, @PathVariable (required = false) Integer port,
+                                           @RequestPart Map<String, String> env,
+                                           @RequestPart Mono<FilePart> packageToRun) {
 
-        return packageRunner.runTarGzPackage(name, port, filePartMono);
+        return packageRunner.runTarGzPackage(chaincodeName, port, io.vavr.collection.HashMap.ofAll(env), packageToRun);
     }
 
 }

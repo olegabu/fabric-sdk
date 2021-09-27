@@ -35,7 +35,7 @@ public class ExternalChaincodeClientServiceRemoteInteractionsTest {
 
     private static final  String TEST_CHAINCODE_LABEL = "test";
     private static final  Integer TEST_CHAINCODE_PORT = 9991;
-    private static final String TEST_TAR_ZG_FILE = "chaincode-as-a-service/ext-chaincode.tar.gz";
+    private static final String TEST_TAR_GZ_FILE = "chaincode-as-a-service/ext-chaincode.tar.gz";
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -58,7 +58,7 @@ public class ExternalChaincodeClientServiceRemoteInteractionsTest {
             public MockResponse dispatch(@NotNull RecordedRequest recordedRequest) throws InterruptedException {
                 if (recordedRequest.getPath().equals(String.format("/control/run-package-on-system/%s/%d", TEST_CHAINCODE_LABEL, TEST_CHAINCODE_PORT))) {
                     assertArrayEquals(
-                            TestUtils.getResourceBytes(TEST_TAR_ZG_FILE),
+                            TestUtils.getResourceBytes(TEST_TAR_GZ_FILE),
                             recordedRequest.getBody().readByteArray());
                     return new MockResponse().setBody("TestSuccess");
                 }
@@ -68,8 +68,8 @@ public class ExternalChaincodeClientServiceRemoteInteractionsTest {
 
 
         SdkAgentConnection sdkConnection = SdkAgentConnection.of(mockWebServer.getHostName(), mockWebServer.getPort());
-        FilePart fp = TestUtils.filePartFromResource(TEST_TAR_ZG_FILE);
-        StepVerifier.create(clientService.runExternalChaincode(sdkConnection, TEST_CHAINCODE_LABEL, TEST_CHAINCODE_PORT, Mono.just(fp)))
+        FilePart fp = TestUtils.filePartFromResource(TEST_TAR_GZ_FILE);
+        StepVerifier.create(clientService.runExternalChaincode(sdkConnection, TEST_CHAINCODE_LABEL, "testPackId", TEST_CHAINCODE_PORT, Mono.just(fp)))
                 .expectNext("TestSuccess")
                 .verifyComplete();
 

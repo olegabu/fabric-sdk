@@ -2,6 +2,7 @@ package com.example.fabric2.service.management;
 
 
 import com.example.fabric2.test.TestUtils;
+import io.vavr.collection.HashMap;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +23,7 @@ public class PackageRunnerTest {
 
         FilePart fp = TestUtils.filePartFromResource("chaincode-as-a-service/ext-chaincode.tar.gz");
 
-        Mono<String> test = packageRunner.runTarGzPackage("test", 9991, Mono.just(fp));
+        Mono<String> test = packageRunner.runTarGzPackage("test", 9991, HashMap.of("PACKAGE_ID", "testPackId"), Mono.just(fp));
 
         StepVerifier.create(test)
                 .expectNextCount(1)

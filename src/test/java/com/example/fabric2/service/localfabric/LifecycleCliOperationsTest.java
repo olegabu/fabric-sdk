@@ -22,7 +22,7 @@ public class LifecycleCliOperationsTest {
     @Test
     public void getCommittedChaincodes() {
         Flux<Chaincode> chaincodes = cliOperation.getCommittedChaincodes("common")
-                .filter(chaincode -> "dns".equals(chaincode.getName()));
+                .filter(chaincode -> "dns".equals(chaincode.getChaincodeName()));
 
         StepVerifier.create(chaincodes)
                 .expectNext(new Chaincode("dns", "1.0", 1))

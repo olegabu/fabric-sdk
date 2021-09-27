@@ -15,7 +15,7 @@ public class Chaincode {
 
     public static final Chaincode empty = new Chaincode();
 
-    private String name;
+    private String chaincodeName;
     private String version;
     private String packageId;
     private String label;
@@ -44,14 +44,14 @@ public class Chaincode {
 
     public static Chaincode ofCommitted(String name, String version, String committedSequence) {
         Chaincode result = new Chaincode();
-        result.name = name;
+        result.chaincodeName = name;
         result.version = version;
         result.sequence = Integer.valueOf(committedSequence);
         return result;
     }
 
     public Chaincode(String name, String version, Integer sequence) {
-        this.name = name;
+        this.chaincodeName = name;
         this.version = version;
         this.sequence = sequence;
     }

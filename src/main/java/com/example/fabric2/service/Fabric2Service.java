@@ -62,7 +62,7 @@ public class Fabric2Service {
     @NotNull
     private Mono<Integer> getChaincodeApprovalSequence(String channelId, String chaincodeName, String packageId) {
         return Mono.from(cliOperations.getCommittedChaincodes(channelId)
-                .filter(committedChaincode -> StringUtils.equals(chaincodeName, committedChaincode.getName())) //TODO: add getCommittedChaincodes (channel, chaincodeName)
+                .filter(committedChaincode -> StringUtils.equals(chaincodeName, committedChaincode.getChaincodeName())) //TODO: add getCommittedChaincodes (channel, chaincodeName)
 //                .filter(a -> StringUtils.equals(packageId, a.getPackageId()))
                 .map(Chaincode::getSequence))
                 .onErrorReturn(0)
@@ -75,14 +75,14 @@ public class Fabric2Service {
 
         return installExternalChaincodePeerPart(metadata, sdkAgentConnection, chaincodeConnection)
                 .flatMap((installResult) ->
-                        runExternalChaincode(metadata, sdkAgentConnection, chaincodeConnection, filePartFlux));
+                        runExternalChaincode(metadata.getLabel(), installResult.getChaincode().getPackageId(), sdkAgentConnection, chaincodeConnection, filePartFlux));
     }
 
-    public Mono<String> runExternalChaincode(ExternalChaincodeMetadata metadata,
+    public Mono<String> runExternalChaincode(String label, String packageId,
                                              SdkAgentConnection sdkAgentConnection,
                                              ExternalChaincodeConnection chaincodeConnection,
                                              Mono<FilePart> filePartFlux) {
-        return chaincodeClientService.runExternalChaincode(sdkAgentConnection, metadata.getLabel(), chaincodeConnection.getChaincodePort(), filePartFlux);
+        return chaincodeClientService.runExternalChaincode(sdkAgentConnection,label, packageId, chaincodeConnection.getChaincodePort(), filePartFlux);
     }
 
     public Mono<InstallChaincodeResult> installExternalChaincodePeerPart(

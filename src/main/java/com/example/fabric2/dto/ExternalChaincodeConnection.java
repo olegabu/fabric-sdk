@@ -3,6 +3,7 @@ package com.example.fabric2.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 @Data
 @AllArgsConstructor(staticName = "of")
@@ -17,7 +18,7 @@ public class ExternalChaincodeConnection {
     private String client_cert;
 
     public static ExternalChaincodeConnection of(String chaincodeHost, Integer chaincodePort, String root_cert) {
-        var result = new ExternalChaincodeConnection();
+        val result = new ExternalChaincodeConnection();
         result.chaincodeHost = chaincodeHost;
         result.chaincodePort = chaincodePort;
         result.root_cert = root_cert;

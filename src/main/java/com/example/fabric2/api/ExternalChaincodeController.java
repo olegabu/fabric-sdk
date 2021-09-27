@@ -52,17 +52,17 @@ public class ExternalChaincodeController {
     }
 
     @CrossOrigin
-    @PostMapping(path = "/run/{name}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+    @PostMapping(path = "/run/{label}/{packageId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Mono<String> runExternalChaincode(
-            @PathVariable String name,
-            @PathVariable String version,
+            @PathVariable String label,
+            @PathVariable String packageId,
             @ModelAttribute SdkAgentConnection sdkAgentConnection,
             @ModelAttribute ExternalChaincodeConnection chaincodeConnection,
-            @RequestPart("files") Mono<FilePart> filePartFlux) {
+            @RequestPart("files") Mono<FilePart> filePartMono) {
 
-        return fabric2Service.runExternalChaincode(ExternalChaincodeMetadata.of(name, "external", version),
-                sdkAgentConnection, chaincodeConnection, filePartFlux);
+        return fabric2Service.runExternalChaincode(label, packageId,
+                sdkAgentConnection, chaincodeConnection, filePartMono);
     }
 
 }
