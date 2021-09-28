@@ -56,7 +56,7 @@ public class Fabric2Service {
                         .map(lastApprovalSequence -> lastApprovalSequence + 1)
                         .flatMap(newSequenceNum ->
                                 cliOperations.approveChaincode(channelId, chaincodeName, version, packageId, newSequenceNum, initRequired)
-                                        .map(out -> Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired)));
+                                        .map(notUsed -> Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired)));
     }
 
     @NotNull

@@ -79,7 +79,7 @@ public class LifecycleCLIOperations {
                 "--sequence", String.valueOf(sequence),
                 "-o", getOrdererAddressParam()
         ));
-        if (initRequired) {
+        if (BooleanUtils.toBoolean(initRequired)) {
             command = joinCommand("--init-required", BooleanUtils.toStringTrueFalse(initRequired));
         }
         return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment()));

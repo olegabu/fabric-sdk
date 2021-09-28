@@ -41,7 +41,7 @@ public class LifecycleChaincodeRestController {
     }
 
 
-    @PostMapping(path = {"/chaincode/approve/{channelId}/{chaincodeName}/{version}/{packageId}", "/chaincode/approve/{channelId}/{chaincodeName}/{version}/{packageId}/initRequired"}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(path = {"/chaincode/approve/{channelId}/{chaincodeName}/{version}/{packageId}", "/chaincode/approve/{channelId}/{chaincodeName}/{version}/{packageId}/{initRequired}"}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Mono<Chaincode> approveChaincode(@PathVariable String channelId,
                                                  @PathVariable String chaincodeName,
                                                  @PathVariable String version,
