@@ -1,6 +1,7 @@
 package com.example.fabric2.service.externalchaincode;
 
 import com.example.fabric2.dto.SdkAgentConnection;
+import com.example.fabric2.service.chaincode.ChaincodeLocalHostService;
 import io.vavr.collection.HashMap;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import java.io.InputStream;
 @RequiredArgsConstructor
 public class ExternalChaincodeClientService {
 
-    private final ExternalChaincodeLocalHostService chaincodeLocalService;
+    private final ChaincodeLocalHostService chaincodeLocalService;
 
     private final WebClient webClient = WebClient.builder().build();
 

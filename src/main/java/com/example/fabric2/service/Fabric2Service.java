@@ -5,10 +5,11 @@ import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.dto.InstallChaincodeResult;
 import com.example.fabric2.dto.SdkAgentConnection;
 import com.example.fabric2.model.Chaincode;
+import com.example.fabric2.service.chaincode.ChaincodeLocalHostService;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeClientService;
-import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
 import com.example.fabric2.service.localfabric.SdkOperations;
+import com.example.fabric2.service.management.PackageHandler;
 import com.example.fabric2.service.management.PortAssigner;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -31,9 +32,9 @@ public class Fabric2Service {
     private final LifecycleCLIOperations cliOperations;
     private final SdkOperations sdkOperations;
     private final ExternalChaincodeClientService chaincodeClientService;
-    private final ExternalChaincodeLocalHostService chaincodeHostService;
+    private final ChaincodeLocalHostService chaincodeHostService;
     private final PortAssigner portAssigner;
-
+    private final PackageHandler packageHandler;
 
     public Flux<Chaincode> getInstalledChaincodes() {
         return cliOperations.getInstalledChaincodes();
@@ -45,6 +46,28 @@ public class Fabric2Service {
 
     public Flux<Chaincode> getCommittedChaincodes(String channelId) {
         return cliOperations.getCommittedChaincodes(channelId);
+    }
+
+    public Mono<InstallChaincodeResult> installChaincode(Mono<FilePart> packageToRun) {
+        return packageHandler.convertToInputStream(packageToRun)
+                .flatMap(chaincodePackageInputStream -> chaincodeHostService.installChaincodeFromInputStream(chaincodePackageInputStream)
+                        .map(result -> new InstallChaincodeResult(result, null)))
+                .onErrorMap(e->{
+                    throw new RuntimeException(e);
+                });
+
+    }
+
+    public Mono<InstallChaincodeResult> installExternalChaincodePeerPart(
+            ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection, ExternalChaincodeConnection chaincodeConnection) {
+
+        return Mono.justOrEmpty(chaincodeConnection.getChaincodePort())
+                .switchIfEmpty(portAssigner.assignRemotePort(sdkAgentConnection))
+                .map(chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection))
+                .flatMap(connectionJson -> chaincodeHostService.prepareMetadataPackageForExternalChaincode(metadata, connectionJson)
+                        .flatMap(chaincodeHostService::installChaincodeFromInputStream)
+                        .map(result -> new InstallChaincodeResult(result, connectionJson)));
+
     }
 
     public Mono<Chaincode> approveChaincode(String channelId, String chaincodeName, String version, String packageId, Boolean initRequired) {
@@ -82,19 +105,9 @@ public class Fabric2Service {
                                              SdkAgentConnection sdkAgentConnection,
                                              ExternalChaincodeConnection chaincodeConnection,
                                              Mono<FilePart> filePartFlux) {
-        return chaincodeClientService.runExternalChaincode(sdkAgentConnection,label, packageId, chaincodeConnection.getChaincodePort(), filePartFlux);
+        return chaincodeClientService.runExternalChaincode(sdkAgentConnection, label, packageId, chaincodeConnection.getChaincodePort(), filePartFlux);
     }
 
-    public Mono<InstallChaincodeResult> installExternalChaincodePeerPart(
-            ExternalChaincodeMetadata metadata, SdkAgentConnection sdkAgentConnection, ExternalChaincodeConnection chaincodeConnection) {
-
-        return Mono.justOrEmpty(chaincodeConnection.getChaincodePort())
-                .switchIfEmpty(portAssigner.assignRemotePort(sdkAgentConnection))
-                .map(chaincodePort -> prepareConnectionJson(chaincodePort, sdkAgentConnection))
-                .flatMap(connectionJson -> chaincodeHostService.installExternalChaincodePeerPart(metadata, connectionJson)
-                        .map(result -> new InstallChaincodeResult(connectionJson, result)));
-
-    }
 
     private ExternalChaincodeConnection prepareConnectionJson(Integer chaincodePort, SdkAgentConnection sdkAgentConnection) {
         return ExternalChaincodeConnection.of(sdkAgentConnection.getAgentHost(), chaincodePort, "TODO");
@@ -109,7 +122,7 @@ public class Fabric2Service {
 
 
     public Mono<Chaincode> installChaincodeFromPackage(InputStream packageInStream) {
-        return chaincodeHostService.installChaincodeFromInputStreamPackage(packageInStream);
+        return chaincodeHostService.installChaincodeFromInputStream(packageInStream);
     }
 
     public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {

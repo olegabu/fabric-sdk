@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InstallChaincodeResult {
-    private ExternalChaincodeConnection chaincodeConnection;
     private Chaincode chaincode;
+    private ExternalChaincodeConnection chaincodeConnection;
 }

@@ -1,6 +1,6 @@
 package com.example.fabric2.api;
 
-import com.example.fabric2.service.management.PackageRunner;
+import com.example.fabric2.service.management.PackageHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -18,7 +18,7 @@ public class ManagementController {
     @Value("${start_ports_pool:9990}")
     private Integer firstPortInPool;
 
-    private final PackageRunner packageRunner;
+    private final PackageHandler packageRunner;
 
     @GetMapping(path = "/assignport")
     public Mono<Integer> reserveNextFreePort() {

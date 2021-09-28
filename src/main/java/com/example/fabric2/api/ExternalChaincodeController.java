@@ -59,10 +59,10 @@ public class ExternalChaincodeController {
             @PathVariable String packageId,
             @ModelAttribute SdkAgentConnection sdkAgentConnection,
             @ModelAttribute ExternalChaincodeConnection chaincodeConnection,
-            @RequestPart("files") Mono<FilePart> filePartMono) {
+            @RequestPart Mono<FilePart> packageToRun) {
 
         return fabric2Service.runExternalChaincode(label, packageId,
-                sdkAgentConnection, chaincodeConnection, filePartMono);
+                sdkAgentConnection, chaincodeConnection, packageToRun);
     }
 
 }

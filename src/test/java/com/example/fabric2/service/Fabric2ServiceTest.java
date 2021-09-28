@@ -3,7 +3,7 @@ package com.example.fabric2.service;
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.model.Chaincode;
-import com.example.fabric2.util.ChaincodeUtils;
+import com.example.fabric2.service.chaincode.ChaincodeLocalHostService;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class Fabric2ServiceTest {
     @Autowired
     private Fabric2Service fabric2Service;
     @Autowired
-    private ChaincodeUtils chaincodeUtils;
+    private ChaincodeLocalHostService chaincodeHostService;
 
 
     private static final String TEST_CHAINCODE = "test-chaincode-" + new Random().nextInt(10000);
@@ -38,7 +38,7 @@ public class Fabric2ServiceTest {
     @Test
     public void testInstallReturnsPackageId() {
 
-        Mono<InputStream> inputStreamMono = chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(METADATA, TEST_EXTERNAL_CONNECTION);
+        Mono<InputStream> inputStreamMono = chaincodeHostService.prepareMetadataPackageForExternalChaincode(METADATA, TEST_EXTERNAL_CONNECTION);
         Mono<Chaincode> installResult = inputStreamMono.flatMap(is -> fabric2Service.installChaincodeFromPackage(is));
 
         StepVerifier.create(installResult)
@@ -64,7 +64,7 @@ public class Fabric2ServiceTest {
     private Mono<String> installApproveCommitChaincode(String org, String name, String version) {
         final ExternalChaincodeMetadata metadata = ExternalChaincodeMetadata.of(name, "external", version);
 
-        Mono<Chaincode> installApprove = chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(metadata, TEST_EXTERNAL_CONNECTION)
+        Mono<Chaincode> installApprove = chaincodeHostService.prepareMetadataPackageForExternalChaincode(metadata, TEST_EXTERNAL_CONNECTION)
                 .flatMap(is -> fabric2Service.installChaincodeFromPackage(is))
                 .flatMap(chaincode -> fabric2Service.approveChaincode("common", name, version, chaincode.getPackageId(), false));
 

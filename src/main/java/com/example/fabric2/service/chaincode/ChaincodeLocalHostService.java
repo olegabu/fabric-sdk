@@ -1,11 +1,13 @@
-package com.example.fabric2.service.externalchaincode;
+package com.example.fabric2.service.chaincode;
 
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
-import com.example.fabric2.util.ChaincodeUtils;
 import com.example.fabric2.util.FileUtils;
+import com.example.fabric2.util.Tar;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -19,19 +21,25 @@ import java.nio.file.Path;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class ExternalChaincodeLocalHostService {
+public class ChaincodeLocalHostService {
 
     private final LifecycleCLIOperations cliOperations;
     private final FileUtils fileUtils;
-    private final ChaincodeUtils chaincodeUtils;
+    private final ObjectMapper objectMapper;
+    private final Tar tar;
 
-    public Mono<Chaincode> installExternalChaincodePeerPart(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connectionJson) {
-        return chaincodeUtils.prepareLifecyclePackageStreamForExternalChaincode(metadata, connectionJson)
-                .flatMap(inputStreamOfPackage -> installChaincodeFromInputStreamPackage(inputStreamOfPackage));
+    public Mono<InputStream> prepareMetadataPackageForExternalChaincode(ExternalChaincodeMetadata metadata, ExternalChaincodeConnection connection) {
+        return Try.of(() -> Mono.just(
+                this.tar.createTarGz("connection.json", objectMapper.writeValueAsString(connection).getBytes()))
+                .map(codeTarGzInputStream -> tar.createTarGz(HashMap.of(
+                        "metadata.json", Try.of(() -> objectMapper.writeValueAsString(metadata).getBytes()).get(),
+                        "code.tar.gz", Try.of(() -> codeTarGzInputStream.readAllBytes()).get()))
+                ))
+                .getOrElseThrow(e -> new RuntimeException("Error packing serialized jsons:" + metadata.toString(), e));
     }
 
 
-    public Mono<Chaincode> installChaincodeFromInputStreamPackage(InputStream packageInStream) {
+    public Mono<Chaincode> installChaincodeFromInputStream(InputStream packageInStream) {
         Path path = fileUtils.savePackageToFile(packageInStream);
         return Try.of(() -> cliOperations.installChaincodeFromPackage(path)
                 .map(Chaincode::fromInstallChaincodeCmdResult)

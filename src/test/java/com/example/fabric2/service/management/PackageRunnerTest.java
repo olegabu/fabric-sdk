@@ -16,7 +16,7 @@ import reactor.test.StepVerifier;
 public class PackageRunnerTest {
 
     @Autowired
-    private PackageRunner packageRunner;
+    private PackageHandler packageRunner;
 
     @Test
     public void extractAndRunTargGZ() {

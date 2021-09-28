@@ -3,7 +3,7 @@ package com.example.fabric2.service.localfabric.externalchaincode;
 import com.example.fabric2.dto.ExternalChaincodeConnection;
 import com.example.fabric2.dto.ExternalChaincodeMetadata;
 import com.example.fabric2.model.Chaincode;
-import com.example.fabric2.service.externalchaincode.ExternalChaincodeLocalHostService;
+import com.example.fabric2.service.chaincode.ChaincodeLocalHostService;
 import com.example.fabric2.service.management.PortAssigner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ public class ExternalChaincodeClientServiceTest {
     PortAssigner portAssigner;
 
     @Autowired
-    private ExternalChaincodeLocalHostService hostService;
+    private ChaincodeLocalHostService chaincodeHostService;
 
     @Test
     public void packageExternalChaincodeTest() {
@@ -32,7 +32,8 @@ public class ExternalChaincodeClientServiceTest {
         ExternalChaincodeMetadata metadata = ExternalChaincodeMetadata.of("testlabel", "external", "1.0");
         ExternalChaincodeConnection connectionJson = ExternalChaincodeConnection.of("localhost", 9991, "TODO");
 
-        Mono<Chaincode> result = hostService.installExternalChaincodePeerPart(metadata, connectionJson);
+        Mono<Chaincode> result = chaincodeHostService.prepareMetadataPackageForExternalChaincode(metadata, connectionJson)
+                .flatMap(chaincodeHostService::installChaincodeFromInputStream);
 
         StepVerifier.create(result)
                 .assertNext(chaincode-> Assertions.assertNotEquals(Chaincode.empty, chaincode))
