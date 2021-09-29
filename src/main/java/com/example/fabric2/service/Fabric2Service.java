@@ -52,7 +52,7 @@ public class Fabric2Service {
         return packageHandler.convertToInputStream(packageToRun)
                 .flatMap(chaincodePackageInputStream -> chaincodeHostService.installChaincodeFromInputStream(chaincodePackageInputStream)
                         .map(result -> new InstallChaincodeResult(result, null)))
-                .onErrorMap(e->{
+                .onErrorMap(e -> {
                     throw new RuntimeException(e);
                 });
 
@@ -79,7 +79,8 @@ public class Fabric2Service {
                         .map(lastApprovalSequence -> lastApprovalSequence + 1)
                         .flatMap(newSequenceNum ->
                                 cliOperations.approveChaincode(channelId, chaincodeName, version, packageId, newSequenceNum, initRequired)
-                                        .map(notUsed -> Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired)));
+                                        .map(notUsed -> Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired))
+                                        .onErrorReturn(Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired))); //TODO: other errors than existing approval
     }
 
     @NotNull

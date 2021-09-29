@@ -70,9 +70,9 @@ public class Chaincode {
      * @return
      */
     public static Chaincode fromInstalledLine(String line) {
-        Pattern p = Pattern.compile("Package ID: (.+):(.+), Label: (.+)");
+        Pattern p = Pattern.compile("Package ID: (.+), Label: (.+)");
         Matcher m = p.matcher(line);
-        return m.find() ? Chaincode.ofInstalled(m.group(2), m.group(3)) : Chaincode.empty;
+        return m.find() ? Chaincode.ofInstalled(m.group(1), m.group(2)) : Chaincode.empty;
     }
 
     public static Chaincode fromInstallChaincodeCmdResult(String consoleOutput) {
