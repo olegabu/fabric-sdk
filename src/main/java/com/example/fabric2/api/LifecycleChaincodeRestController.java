@@ -43,7 +43,8 @@ public class LifecycleChaincodeRestController {
     }
 
 
-    @PostMapping(path = "/chaincode/install", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_EVENT_STREAM_VALUE) //TODO: {chaincodeName}/{version}/{lang}
+    @PostMapping(path = "/chaincode/install", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    //TODO: {chaincodeName}/{version}/{lang}
     public Mono<InstallChaincodeResult> installChaincode(@PathVariable(required = false) String chaincodeName,
                                                          @PathVariable(required = false) String version,
                                                          @RequestPart Mono<FilePart> packageToRun) {
@@ -64,6 +65,14 @@ public class LifecycleChaincodeRestController {
     @PostMapping(path = "/chaincode/commit/{channelId}/{chaincodeName}/{version}/{newSequence}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Mono<String> commitChaincode(@PathVariable String channelId, @PathVariable String chaincodeName, @PathVariable String version, @PathVariable Integer newSequence) {
         return fabric2Service.commitChaincode(channelId, chaincodeName, version, newSequence);
+    }
+
+    @GetMapping(path = "/chaincode/checkcommitreadiness/{channelId}/{chaincodeName}/{version}/{newSequence}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Mono<Boolean> checkCommitReadiness(@PathVariable String channelId,
+                                             @PathVariable String chaincodeName,
+                                             @PathVariable String version,
+                                             @PathVariable Integer newSequence) {
+        return null;//TODO: fabric2Service.checkCommitReadiness(channelId, chaincodeName, version, newSequence);
     }
 
 

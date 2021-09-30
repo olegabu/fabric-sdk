@@ -8,7 +8,6 @@ import com.example.fabric2.model.Chaincode;
 import com.example.fabric2.service.chaincode.ChaincodeLocalHostService;
 import com.example.fabric2.service.externalchaincode.ExternalChaincodeClientService;
 import com.example.fabric2.service.localfabric.LifecycleCLIOperations;
-import com.example.fabric2.service.localfabric.SdkOperations;
 import com.example.fabric2.service.management.PackageHandler;
 import com.example.fabric2.service.management.PortAssigner;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class Fabric2Service {
 
 
     private final LifecycleCLIOperations cliOperations;
-    private final SdkOperations sdkOperations;
     private final ExternalChaincodeClientService chaincodeClientService;
     private final ChaincodeLocalHostService chaincodeHostService;
     private final PortAssigner portAssigner;
