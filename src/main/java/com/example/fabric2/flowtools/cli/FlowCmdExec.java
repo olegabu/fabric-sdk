@@ -9,7 +9,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.reactivestreams.Publisher;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,11 +37,7 @@ public class FlowCmdExec<T> {
         Process run = new CmdRunner().run(dir, command, environment);
         run.onExit().thenApply(process -> queue.offer(process));
 
-        log.info("Parsing output: {}", ReflectionToStringBuilder.toString(command));
-//        Publisher<T> successOutput = recordParser.apply(run.getInputStream());
-//        Publisher<T> errOutputOnSuccess = recordParser.apply(run.getErrorStream());
-        log.info("Wait for exit code: {}", ReflectionToStringBuilder.toString(command));
-
+        log.info("Wait for exit code");
         return waitForExitCodeAndGetErrorOutput(queue, recordParser);
 
 //        return Flux.merge(successOutput, errOutputOnSuccess, errorOutput).;

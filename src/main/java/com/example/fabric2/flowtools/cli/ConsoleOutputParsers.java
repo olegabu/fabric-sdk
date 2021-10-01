@@ -37,7 +37,8 @@ public class ConsoleOutputParsers {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         return Flux.fromStream(bufferedReader.lines())
                 .reduce((result, current) ->
-                        result + "\n" + current); //TODO: get string right from stream
+                        result + "\n" + current)
+                .log(); //TODO: get string right from stream
     };
 
 }

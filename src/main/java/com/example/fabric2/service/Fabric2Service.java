@@ -73,22 +73,36 @@ public class Fabric2Service {
                 .filter(c -> StringUtils.equals(packageId, c.getPackageId()))
                 .take(1)
                 .flatMap(c ->*/
-                getChaincodeApprovalSequence(channelId, chaincodeName, packageId)
-                        .map(lastApprovalSequence -> lastApprovalSequence + 1)
+                getLastCommitedChaincodeOnChannel(channelId, chaincodeName, packageId)
+//                        .map(lastApprovalSequence -> lastApprovalSequence + 1)
+                        .map(lastCommitted -> StringUtils.equals(version, lastCommitted.getVersion())
+                                ? lastCommitted.getSequence() : lastCommitted.getSequence() + 1)
                         .flatMap(newSequenceNum ->
                                 cliOperations.approveChaincode(channelId, chaincodeName, version, packageId, newSequenceNum, initRequired)
                                         .map(notUsed -> Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired))
                                         .onErrorReturn(Chaincode.ofApproved(newSequenceNum, version, packageId, initRequired))); //TODO: other errors than existing approval
     }
 
+    public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
+        return chaincodeHostService.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
+    }
+
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence) {
+        return chaincodeHostService.commitChaincode(channelId, chaincodeName, version, newSequence);
+    }
+
     @NotNull
-    private Mono<Integer> getChaincodeApprovalSequence(String channelId, String chaincodeName, String packageId) {
-        return Mono.from(cliOperations.getCommittedChaincodes(channelId)
-                .filter(committedChaincode -> StringUtils.equals(chaincodeName, committedChaincode.getChaincodeName())) //TODO: add getCommittedChaincodes (channel, chaincodeName)
-//                .filter(a -> StringUtils.equals(packageId, a.getPackageId()))
-                .map(Chaincode::getSequence))
-                .onErrorReturn(0)
-                .defaultIfEmpty(0);
+    private Mono<Chaincode> getLastCommitedChaincodeOnChannel(String channelId, String chaincodeName, String packageId) {
+        Chaincode defaultCommitedChaincode = Chaincode.ofCommitted(chaincodeName, null, "0");
+
+        return Mono.from(
+                cliOperations.getCommittedChaincodes(channelId)
+                        .filter(committedChaincode -> StringUtils.equals(chaincodeName, committedChaincode.getChaincodeName())) //TODO: add getCommittedChaincodes (channel, chaincodeName)
+//                .filter(committedChaincode -> StringUtils.equals(packageId, committedChaincode.getPackageId()))
+//                .map(Chaincode::getSequence))
+                        .onErrorReturn(defaultCommitedChaincode)
+                        .defaultIfEmpty(defaultCommitedChaincode)
+        );
     }
 
 
@@ -124,11 +138,4 @@ public class Fabric2Service {
         return chaincodeHostService.installChaincodeFromInputStream(packageInStream);
     }
 
-    public Mono<Boolean> checkCommitReadiness(String org, String channelId, String chaincodeName, String version, Integer sequence) {
-        return chaincodeHostService.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
-    }
-
-    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence) {
-        return chaincodeHostService.commitChaincode(channelId, chaincodeName, version, newSequence);
-    }
 }
