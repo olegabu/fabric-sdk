@@ -92,6 +92,10 @@ https://www.udemy.com/course/hyperledger-fabric-on-kubernetes-complete-guide/
     http://www.think-foundry.com/deploy-hyperledger-fabric-on-kubernetes-part-1/
 
     https://github.com/hyfen-nl/PIVT
-    
+
+    Hyperledger Fabric blockchain deployment on Google Kubernetes Engine  
+    - [ ] https://itnext.io/kubernetes-operator-for-hyperledger-fabric-8bd13fa20a2a
+
+
 CKAD exam  
 https://www.cncf.io/certification/ckad/
