@@ -39,18 +39,22 @@ public class ChaincodeLocalHostService {
     }
 
 
-    public Mono<Chaincode> installChaincodeFromInputStream(InputStream packageInStream) {
-        Path path = fileUtils.savePackageToFile(packageInStream);
-        return Try.of(() -> cliOperations.installChaincodeFromPackage(path)
+    public Mono<Chaincode> installChaincodeFromFile(Path filePath) {
+        return Try.of(() -> cliOperations.installChaincodeFromPackage(filePath)
                 .map(Chaincode::fromInstallChaincodeCmdResult)
                 .filter(chaincode -> chaincode != Chaincode.empty)
                 .doFinally((signal) -> Try.of(() ->
                 {
                     log.info("Files.deleteIfExists(path)");
-                    Files.deleteIfExists(path);
-                            return true;
+                    Files.deleteIfExists(filePath);
+                    return true;
                 })))
                 .get();
+
+    }
+    public Mono<Chaincode> installChaincodeFromInputStream(InputStream packageInStream) {
+        Path path = fileUtils.savePackageToFile(packageInStream);
+        return installChaincodeFromFile(path);
 
         /*    public Flux<String> installChaincode(String label, String version, String lang, String path, ) {
                 Try.of(()-> {
