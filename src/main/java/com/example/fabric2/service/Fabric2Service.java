@@ -47,13 +47,12 @@ public class Fabric2Service {
     }
 
     public Mono<InstallChaincodeResult> installChaincode(Mono<FilePart> packageToRun) {
-        return packageHandler.convertToInputStream(packageToRun)
-                .flatMap(chaincodePackageInputStream -> chaincodeHostService.installChaincodeFromInputStream(chaincodePackageInputStream)
+        return packageHandler.convertToFile(packageToRun)
+                .flatMap(filePath -> chaincodeHostService.installChaincodeFromFile(filePath)
                         .map(result -> new InstallChaincodeResult(result, null)))
                 .onErrorMap(e -> {
                     throw new RuntimeException(e);
                 });
-
     }
 
     public Mono<InstallChaincodeResult> installExternalChaincodePeerPart(

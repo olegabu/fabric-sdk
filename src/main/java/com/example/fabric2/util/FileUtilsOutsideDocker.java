@@ -32,13 +32,13 @@ public class FileUtilsOutsideDocker extends FileUtils {
                 .dockerHost(dockerConfig.getDockerHost()).build();
 
         DockerClient dockerClient = DockerClientImpl.getInstance(dockerConfig, httpClient);
-
+        Path containerPath = Path.of("/tmp");
         CopyArchiveToContainerCmd copyArchiveToContainerCmd = dockerClient.copyArchiveToContainerCmd(dockerContainer);
         copyArchiveToContainerCmd
                 .withHostResource(path.toString())
-                .withRemotePath(path.getParent().toString())
+                .withRemotePath(/*path*/containerPath./*getParent().*/toString())
                 .exec();
 
-        return path;
+        return containerPath.resolve(path.getFileName());
     }
 }
