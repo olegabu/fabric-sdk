@@ -82,6 +82,12 @@ Exposing an External IP Address to Access an Application in a Cluster
 https://kubernetes.io/docs/tutorials/stateless-application/expose-external-ip-address/
 
 
+Reloader in Kubernetes  
+https://rtfm.co.ua/en/kubernetes-configmap-and-secrets-data-auto-reload-in-pods/
+
+Helm: reusable chart — named templates, and a generic chart for multiple applications  
+https://dev.to/setevoy/helm-reusable-chart-named-templates-and-a-generic-chart-for-multiple-applications-1i8k
+
 
 Fabric in Kubernetes
 https://www.udemy.com/course/hyperledger-fabric-on-kubernetes-complete-guide/ 
