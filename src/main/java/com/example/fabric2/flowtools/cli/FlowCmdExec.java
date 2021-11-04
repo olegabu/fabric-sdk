@@ -33,7 +33,7 @@ public class FlowCmdExec<T> {
 
     public Flux<T> exec(File dir, String[] command, Function<InputStream, Publisher<T>> recordParser, Map<String, String> environment) {
 
-        log.info("Running command {}", ReflectionToStringBuilder.toString(command));
+        log.info("Running command {}, {}", ReflectionToStringBuilder.toString(command), environment);
         Process run = new CmdRunner().run(dir, command, environment);
         run.onExit().thenApply(process -> queue.offer(process));
 
