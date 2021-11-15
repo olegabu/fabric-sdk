@@ -76,7 +76,7 @@ public class Fabric2ServiceTest {
 
         Mono<String> readinessAndCommit = approvedChaincodesFilteredByNewPackageId
                 .flatMap(approveChaincode -> fabric2Service.checkCommitReadiness(org, "common", name, version, approveChaincode.getSequence())
-                        .flatMap(isReady -> fabric2Service.commitChaincode("common", name, version, approveChaincode.getSequence())));
+                        .flatMap(isReady -> fabric2Service.commitChaincode("common", name, version, approveChaincode.getSequence(), null)));
 
         return readinessAndCommit;
     }

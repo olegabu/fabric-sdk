@@ -79,9 +79,7 @@ public class LifecycleCLIOperations {
                 "--sequence", String.valueOf(sequence),
                 "-o", getOrdererAddressParam()
         ));
-        if (BooleanUtils.toBoolean(initRequired)) {
-            command = joinCommand("--init-required", BooleanUtils.toStringTrueFalse(initRequired));
-        }
+        command = joinIsInitRequired(command, initRequired);
         return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment()));
     }
 
@@ -102,13 +100,14 @@ public class LifecycleCLIOperations {
                 .defaultIfEmpty(false));
     }
 
-    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence) {
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence, Boolean initRequired) {
         String[] command = joinTLSOpts(joinCommand(peerCommand, "lifecycle chaincode commit",
                 "--channelID", channelId,
                 "--name", chaincodeName,
                 "--version", version,
                 "--sequence", String.valueOf(newSequence),
                 "-o", getOrdererAddressParam()));
+        command = joinIsInitRequired(command, initRequired);
         return Mono.from(plainCmdExec.exec(command, ConsoleOutputParsers.ConsoleOutputToStringParser, prepareEnvironment())).log();
     }
 
@@ -134,11 +133,20 @@ public class LifecycleCLIOperations {
                 .toArray(String[]::new);
     }
 
-    private String[] joinTLSOpts(String[] command) {
-        return Stream.concat(Arrays.stream(command), Stream.of("--tls", "--cafile",
-                String.format("/etc/hyperledger/crypto-config/ordererOrganizations/%s/msp/tlscacerts/tlsca.%s-cert.pem", ORDERER_DOMAIN, ORDERER_DOMAIN)))
-                .toArray(String[]::new);
+    private String[] joinCommand(String[] command, String... opts) {
+        return Stream.concat(Arrays.stream(command), Stream.of(opts)).toArray(String[]::new);
+    }
 
+    private String[] joinTLSOpts(String[] command) {
+        return joinCommand(command, "--tls", "--cafile",
+                String.format("/etc/hyperledger/crypto-config/ordererOrganizations/%s/msp/tlscacerts/tlsca.%s-cert.pem", ORDERER_DOMAIN, ORDERER_DOMAIN));
+    }
+
+    private String[] joinIsInitRequired(String[] command, Boolean initRequired) {
+        if (BooleanUtils.toBoolean(initRequired)) {
+            command = joinCommand(command, "--init-required");
+        }
+        return command;
     }
 
 }

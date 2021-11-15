@@ -62,9 +62,10 @@ public class LifecycleChaincodeRestController {
         return fabric2Service.approveChaincode(channelId, chaincodeName, version, packageId, initRequired);
     }
 
-    @PostMapping(path = "/chaincode/commit/{channelId}/{chaincodeName}/{version}/{newSequence}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Mono<String> commitChaincode(@PathVariable String channelId, @PathVariable String chaincodeName, @PathVariable String version, @PathVariable Integer newSequence) {
-        return fabric2Service.commitChaincode(channelId, chaincodeName, version, newSequence);
+    @PostMapping(path = "/chaincode/commit/{channelId}/{chaincodeName}/{version}/{newSequence}/{initRequired}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Mono<String> commitChaincode(@PathVariable String channelId, @PathVariable String chaincodeName, @PathVariable String version, @PathVariable Integer newSequence,
+                                        @PathVariable(required = false) Boolean initRequired) {
+        return fabric2Service.commitChaincode(channelId, chaincodeName, version, newSequence, initRequired);
     }
 
     @GetMapping(path = "/chaincode/checkcommitreadiness/{channelId}/{chaincodeName}/{version}/{newSequence}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

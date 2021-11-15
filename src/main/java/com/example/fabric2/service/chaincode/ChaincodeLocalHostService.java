@@ -72,7 +72,7 @@ public class ChaincodeLocalHostService {
         return cliOperations.checkCommitReadiness(org, channelId, chaincodeName, version, sequence);
     }
 
-    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence) {
-        return cliOperations.commitChaincode(channelId, chaincodeName, version, newSequence);
+    public Mono<String> commitChaincode(String channelId, String chaincodeName, String version, Integer newSequence, Boolean initRequired) {
+        return cliOperations.commitChaincode(channelId, chaincodeName, version, newSequence, initRequired);
     }
 }
