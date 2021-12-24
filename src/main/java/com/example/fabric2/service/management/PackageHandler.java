@@ -14,10 +14,7 @@ import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,7 +68,14 @@ public class PackageHandler {
                         return fileChannel.write(currentBuf.asByteBuffer(), fileWriteOffset.getAndAdd(bufSize));
                     }).get()))
                     .map(notUsed->path);
-        }).get();
+        })
+        .andFinally(() -> {
+            try {
+                pos.close();
+            } catch (IOException ignored) {
+            }
+        })
+        .get();
 
     }
 
@@ -104,12 +108,13 @@ public class PackageHandler {
 */
 //                    .map(dataBufferFlux -> Tuple.of((InputStream) pis, dataBufferFlux));
         })
-                /* .andFinally(() -> {
-                     try {
-                         pos.close();
-                     } catch (IOException ignored) {
-                     }
-                 })*/.get();
+         .andFinally(() -> {
+             try {
+                 pos.close();
+             } catch (IOException ignored) {
+             }
+         })
+         .get();
     }
 /*        return filePartMono.flatMap(filePart -> filePart.content()
                 .reduce(InputStream.nullInputStream(), (resultStream, buf1) ->
