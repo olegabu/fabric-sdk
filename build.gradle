@@ -32,7 +32,11 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
     implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.21'
 
-    implementation group: 'org.hyperledger.fabric-sdk-java', name: 'fabric-sdk-java', version: '[2.2.0,2.3.0)'
+    implementation (group:'org.hyperledger.fabric-sdk-java', name: 'fabric-sdk-java', version: '[2.2.0,2.3.0)') {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    }
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.0'
+
     implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.69'
 
     implementation group: 'com.github.docker-java', name: 'docker-java-core', version: '3.2.12'
