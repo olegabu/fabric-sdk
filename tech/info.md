@@ -105,3 +105,7 @@ https://www.udemy.com/course/hyperledger-fabric-on-kubernetes-complete-guide/
 
 CKAD exam  
 https://www.cncf.io/certification/ckad/
+
+
+Spring Boot Actuator
+https://www.callicoder.com/spring-boot-actuator/
