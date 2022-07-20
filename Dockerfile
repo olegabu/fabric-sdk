@@ -9,7 +9,8 @@ FROM gradle:7-jdk11-alpine
 COPY . .
 
 RUN gradle clean build -x test
-RUN cp build/libs/fabric2-rest-api-0.0.1-SNAPSHOT.jar /fabric2-rest-api.jar
+RUN mkdir /fabric2-rest-api
+RUN cp build/libs/fabric2-rest-api-0.0.1-SNAPSHOT.jar /fabric2-rest-api/fabric2-rest-api.jar
 
 # copy fabic executables if changed
 COPY --from=fabrictools /etc/hyperledger/fabric/core.yaml /
@@ -17,4 +18,5 @@ COPY --from=fabrictools /usr/local/bin/peer /usr/local/bin
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","/fabric2-rest-api.jar"]
+WORKDIR /fabric2-rest-api
+ENTRYPOINT ["java","-jar","fabric2-rest-api.jar"]
