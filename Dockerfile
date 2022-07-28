@@ -16,13 +16,13 @@ RUN cp ${JAR_FILE} /fabric2-rest-api.jar
 
 FROM ${JDK_IMAGE:-'adoptopenjdk/openjdk11:alpine-jre'}
 
+ENV JAR_DIR=/fabric2-rest-api
+WORKDIR ${JAR_DIR}
+
 # copy fabic executables if changed
-COPY --from=fabrictools /etc/hyperledger/fabric/core.yaml /
+COPY --from=fabrictools /etc/hyperledger/fabric/core.yaml ./
 COPY --from=fabrictools /usr/local/bin/peer /usr/local/bin
 
-ENV JAR_DIR=/fabric2-rest-api
-RUN mkdir ${JAR_DIR}
-WORKDIR ${JAR_DIR}
 COPY --from=gradle /fabric2-rest-api.jar ./
 
 EXPOSE 8080
